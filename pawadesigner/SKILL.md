@@ -21,6 +21,7 @@ This skill provides a decision framework for component selection, a complexity r
 - ✋ **NEVER leave forms in Sizeable mode** — Set FormBorderStyle to Fixed or FixedToolWindow
 - ✋ **Date pickers** — Always format as `dd/MM/yyyy` short date using `DateTimePicker.Format` property
 - ✋ **Styling & reusable functions** → **Always use ThemeManager.cs** (D:\cp\pp\pawapos-shared\ThemeManager.cs) via `ThemeManager.ApplyModernTheme(this)` and `ThemeManager.StyleXXX()` methods
+- ✋ **Project application icon** — All forms must use the project's application icon: `Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath)` (ensures consistent branding across all forms)
 - ✋ **Self-learning** — When skill receives new constraints via prompt, update skill for future applications
 
 ## When to Use
@@ -152,11 +153,12 @@ Grep/search for forms using SfForm base class with Designer-based controls:
    - Names: `_textboxName`, `_comboboxStatus`, `_dateFrom`, `_buttonSubmit`
    - Text: Labels, button captions
    - Size/positioning: Use Anchors (for responsive) or Dock
+   - **Icon:** Set form Icon to extract from application executable (will be set in code)
    - DateTimePicker: Set `Format = Short`, `CustomFormat = "dd/MM/yyyy"`
    - ComboBox: Set `DropDownStyle = DropDownList` (if read-only)
    - DataGridView: Set `ReadOnly = true`, `AllowUserToAddRows = false`
 
-**Step 2: Apply Styling in Constructor**
+**Step 2: Apply Styling and Icon in Constructor**
 ```csharp
 public class MyForm : SfForm
 {
@@ -167,6 +169,9 @@ public class MyForm : SfForm
     public MyForm()
     {
         InitializeComponent();  // Designer-generated code
+        
+        // Set application icon (project branding - hard rule)
+        Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         
         // Apply theme to entire form
         ThemeManager.ApplyModernTheme(this);
@@ -348,6 +353,17 @@ ThemeManager.StylePrimaryButton(_buttonSubmit);  // ✅ CORRECT
 → User can't fix the error ("Invalid input")
 
 **✅ Be specific and actionable: "Date must be between 01/01/2025 and 31/12/2025. You entered 15/01/2026."**
+
+---
+
+**❌ Forgetting to set application icon**
+→ Form shows default Windows icon; breaks brand consistency; looks unprofessional
+
+**✅ Always set icon in constructor:**
+```csharp
+Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+```
+All forms use the same project application icon for consistent branding.
 
 ---
 
