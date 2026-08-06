@@ -7,7 +7,7 @@ description: Use when designing forms for PawaPos project—before choosing comp
 
 ## Overview
 
-Form design for PawaPos uses **Syncfusion components exclusively**, leverages **ThemeManager.cs** for all styling and reusable functions, and follows strict format/sizing rules. Design focuses on assessing complexity early to choose the right model, and systematically validating assumptions before implementation.
+Form design for PawaPos uses **SfForm base class** + **standard .NET controls** (TextBox, ComboBox, DateTimePicker, etc.), leverages **ThemeManager.cs** for all styling, and follows the **Visual Studio Designer-first approach**. Design focuses on assessing complexity early, anchoring to Designer-compatible patterns, and systematically validating assumptions.
 
 This skill provides a decision framework for component selection, a complexity rubric for model choice, validation patterns, and mandatory compliance rules.
 
@@ -15,10 +15,12 @@ This skill provides a decision framework for component selection, a complexity r
 
 **These rules are absolute. No exceptions.**
 
-- ✋ **NEVER use DevComponents** (DotNetBar, etc.) — Syncfusion only
-- ✋ **NEVER leave forms in Sizeable mode** — Update form's FormBorderStyle to Fixed or FixedToolWindow
-- ✋ **Date pickers** — Always format as `dd/MM/yyyy` short date; verify picker loads on init
-- ✋ **Styling & reusable functions** → **Always use ThemeManager.cs** (D:\cp\pp\pawapos-shared\ThemeManager.cs)
+- ✋ **Form base class must be SfForm** — Not MetroForm, not Form; inherit from Syncfusion.WinForms.Controls.SfForm
+- ✋ **Data entry controls are standard .NET** — TextBox, ComboBox, DateTimePicker, CheckBox, DataGridView (NOT Sf* alternatives)
+- ✋ **Designer-first design** — Every control must be editable in Visual Studio Designer; no dynamic-only controls
+- ✋ **NEVER leave forms in Sizeable mode** — Set FormBorderStyle to Fixed or FixedToolWindow
+- ✋ **Date pickers** — Always format as `dd/MM/yyyy` short date using `DateTimePicker.Format` property
+- ✋ **Styling & reusable functions** → **Always use ThemeManager.cs** (D:\cp\pp\pawapos-shared\ThemeManager.cs) via `ThemeManager.ApplyModernTheme(this)` and `ThemeManager.StyleXXX()` methods
 - ✋ **Self-learning** — When skill receives new constraints via prompt, update skill for future applications
 
 ## When to Use
@@ -34,42 +36,42 @@ This skill provides a decision framework for component selection, a complexity r
 - Choosing colors or fonts (use pawa-ui-authoring skill for branding)
 - Fixing bugs in deployed forms (use systematic-debugging skill first)
 
-## Phase 1: Anchor to ThemeManager & Syncfusion Patterns
+## Phase 1: Anchor to Existing Form Patterns
 
-**Always start here.** All styling and reusable functions live in ThemeManager.cs.
+**Always start here.** Study real forms to understand the pattern.
 
 **Step 1: Review ThemeManager.cs**
 ```
 Location: D:\cp\pp\pawapos-shared\ThemeManager.cs
-Purpose: Central repository for all form styling, colors, fonts, and reusable UI functions
-Always: Check what's available before creating custom styles
+Purpose: Central repository for styling, colors, fonts, and button/control theming
+Available methods: ApplyModernTheme(), StylePrimaryButton(), StyleDataGrid(), StyleDateTimePicker(), etc.
+Always: Check available methods before hand-coding any styling
 ```
 
-**Step 2: Use Semble MCP to find Syncfusion form patterns**
-```
-Search for existing Syncfusion form implementations:
-- "sfForm" OR "SfTextBox" OR "SfComboBox" OR "SfGrid" files
-- Look at: Syncfusion component usage, validation patterns, error handling, date format usage
-- Document: Component patterns, error presentation style (toast vs MessageBox), validation timing
-```
+**Step 2: Find Existing Form Examples**
+Grep/search for forms using SfForm base class:
+- `PlPaymentStatus.cs` — Best reference: SfForm + TextBox + ComboBox + DateTimePicker + DataGridView
+- `DiaPackingMaster.cs` — Another example (older pattern with MetroForm, being phased out)
+- Look at: Component choices (all standard .NET), validation patterns, error handling, date formats, layout strategy
 
-**What to capture from existing Syncfusion forms:**
+**What to capture from existing forms:**
 
 | Pattern | Example | Why | Reference |
 |---------|---------|-----|-----------|
-| Form base class | sfForm or inherited from SfForm | Consistency with Syncfusion standards | Recent forms using Syncfusion |
-| Input controls | SfTextBox, SfComboBox, SfDateTimePicker | All Syncfusion (NO DevComponents) | Recent forms |
-| Error presentation | `Shared.toast()` style, ErrorProvider usage | Defines error UX | Existing Syncfusion form |
-| Validation timing | Real-time vs pre-submit vs post-submit | Affects responsiveness | Existing form |
-| Date format | dd/MM/yyyy | REQUIRED standard format | ThemeManager or DateTimeFormat constant |
-| Label strategy | Hardcoded strings vs localization | Impacts i18n scope | Check for `Shared.GetMessage()` usage |
-| Form sizing | FormBorderStyle (Fixed, FixedToolWindow) | NO Sizeable mode by default | Recent forms |
+| Form base class | `SfForm` | Consistent with company modernization | PlPaymentStatus.cs line 10 |
+| Input controls | TextBox, ComboBox, DateTimePicker, CheckBox | Designer-compatible; ThemeManager styles them | PlPaymentStatus.cs lines 12–18 |
+| Error presentation | `Shared.toast()`, ErrorProvider | Non-blocking errors shown to user | Check actual error handling in forms |
+| Validation timing | Real-time (TextChanged) vs pre-submit vs async | Affects responsiveness and UX | Study existing form validation events |
+| Date format | dd/MM/yyyy via `CustomFormat` property | REQUIRED standard format | DateTimePicker.CustomFormat = "dd/MM/yyyy" |
+| Styling approach | `ThemeManager.ApplyModernTheme(this)` in constructor | Centralized theme consistency | PlPaymentStatus.cs line 33 |
+| Layout strategy | FlowLayoutPanel for rows, Dock for fill | Designer-friendly responsive layout | PlPaymentStatus.cs lines 54–73 |
+| Form sizing | Fixed size, no Sizeable mode | Prevents broken layouts | PlPaymentStatus.cs lines 51–52 |
 
 **Document assumptions** from existing patterns:
 - Single-factor or multi-factor auth?
 - Employee-only or multi-tenant?
 - Offline support required?
-- Async login or blocking UI?
+- Async operations with UI responsiveness?
 
 ## Phase 2: Assess Complexity → Select Model
 
@@ -117,30 +119,89 @@ Search for existing Syncfusion form implementations:
 
 ## Phase 3: Component Selection
 
-**All components are Syncfusion. This is non-negotiable.**
+**Form base is SfForm; data entry controls are standard .NET. Designer-first approach only.**
 
-### Syncfusion Component Reference
+### Component Reference
 
-| Need | Component | Documentation | Notes |
-|------|-----------|-----------------|-------|
-| Form base | sfForm or inherit SfForm | (in progress) | Always use Syncfusion form base |
-| Text input | SfTextBox | (in progress) | Single-line text, numbers, formatted input |
-| Multiline text | SfTextBox with multiline | (in progress) | Larger textarea-style input |
-| Dropdown/combo | SfComboBox | (in progress) | With search, filtering, remote data source |
-| Date picker | SfDateTimePicker | [[pawadesigner-sfdatetimepicker]] | Format: `dd/MM/yyyy`; **CRITICAL: verify picker loads on init** |
-| Data grid | SfDataGrid | (in progress) | Sortable, filterable, multi-select rows |
-| Button | SfButton | (in progress) | Styled, primary/secondary variants via ThemeManager |
-| Checkbox/radio | SfCheckBox, SfRadioButton | (in progress) | Standard form selections |
-| Tabs | SfTabControl | (in progress) | Multi-step forms or grouped sections |
-| Label | SfLabel | (in progress) | Linked to input controls for accessibility |
+| Need | Component | Designer Support | Notes |
+|------|-----------|------------------|-------|
+| **Form base** | `SfForm` | ✅ Yes | Inherit from Syncfusion.WinForms.Controls.SfForm |
+| **Single-line text** | `TextBox` | ✅ Yes | Standard .NET; ThemeManager styles at runtime |
+| **Multiline text** | `TextBox` Multiline=true | ✅ Yes | Set Height in Designer |
+| **Dropdown/combo** | `ComboBox` | ✅ Yes | DropDownStyle.DropDownList for read-only; DataSource for populate |
+| **Date picker** | `DateTimePicker` | ✅ Yes | `Format = Short` + `CustomFormat = "dd/MM/yyyy"` in Designer |
+| **Data grid** | `DataGridView` | ✅ Yes | `ReadOnly=true`, `AllowUserToAddRows=false`, `AllowUserToDeleteRows=false` |
+| **Button** | `Button` | ✅ Yes | Style via `ThemeManager.StylePrimaryButton()` etc. in constructor |
+| **Checkbox** | `CheckBox` | ✅ Yes | Standard .NET; no Sf* alternative |
+| **Radio button** | `RadioButton` | ✅ Yes | Standard .NET; no Sf* alternative |
+| **Label** | `Label` | ✅ Yes | AutoSize=true; associates with input via tab order |
+| **Flow layout** | `FlowLayoutPanel` | ✅ Yes | For filter rows, button groups |
+| **Tab control** | `TabControl` | ✅ Yes | For multi-step forms; Designer support excellent |
 
-**When unsure about a component:**
-1. Check [Syncfusion WindowsForms official docs](https://help.syncfusion.com/windowsforms/form/getting-started)
-2. Learn the official API and patterns
-3. Create/update a component sub-reference (see sub-references/ folder)
-4. Link it in the table above
+**Never use:** SfTextBox, SfComboBox, SfDateTimePicker, SfButton, SfLabel, SfCheckBox, SfRadioButton (not Designer-friendly; not in project pattern)
 
-This builds local documentation as the project grows.
+### Designer-First Design Pattern
+
+**Step 1: Design in Visual Studio Designer**
+1. Open Form in Designer
+2. Drag standard .NET controls from Toolbox (TextBox, ComboBox, DateTimePicker, etc.)
+3. Set properties in Designer:
+   - Names: `_textboxName`, `_comboboxStatus`, `_dateFrom`, `_buttonSubmit`
+   - Text: Labels, button captions
+   - Size/positioning: Use Anchors (for responsive) or Dock
+   - DateTimePicker: Set `Format = Short`, `CustomFormat = "dd/MM/yyyy"`
+   - ComboBox: Set `DropDownStyle = DropDownList` (if read-only)
+   - DataGridView: Set `ReadOnly = true`, `AllowUserToAddRows = false`
+
+**Step 2: Apply Styling in Constructor**
+```csharp
+public class MyForm : SfForm
+{
+    private TextBox _textboxName;
+    private Button _buttonSubmit;
+    // ... other controls from Designer
+    
+    public MyForm()
+    {
+        InitializeComponent();  // Designer-generated code
+        
+        // Apply theme to entire form
+        ThemeManager.ApplyModernTheme(this);
+        
+        // Style buttons
+        ThemeManager.StylePrimaryButton(_buttonSubmit);
+        ThemeManager.StyleSecondaryButton(_buttonCancel);
+        
+        // Style data grid if present
+        ThemeManager.StyleDataGrid(_dataGridView);
+    }
+}
+```
+
+### Styling via ThemeManager
+
+**Never hand-code colors, fonts, or spacing. Always use ThemeManager methods:**
+
+Available methods (check ThemeManager.cs for complete list):
+- `ApplyModernTheme(form)` — Applies theme to entire form + Escape-to-close handler
+- `StylePrimaryButton(button)` — Primary action (orange/blue)
+- `StyleSecondaryButton(button)` — Secondary action (gray)
+- `StyleCloseButton(button)` — Close/Cancel button
+- `StyleDataGrid(grid)` — Data grid styling + colors
+- `StyleDateTimePicker(picker)` — Date picker theming
+- (Other control-specific methods as available)
+
+**Example: Don't do this:**
+```csharp
+_buttonSubmit.BackColor = Color.Orange;  // ❌ WRONG
+_textboxName.Font = new Font("Segoe UI", 11);  // ❌ WRONG
+```
+
+**Do this instead:**
+```csharp
+ThemeManager.StylePrimaryButton(_buttonSubmit);  // ✅ CORRECT
+// ThemeManager applies font, color, sizing at runtime
+```
 
 ### Styling Pattern
 
@@ -208,66 +269,80 @@ This builds local documentation as the project grows.
 
 ## Common Mistakes
 
-**❌ Using DevComponents (DotNetBar) instead of Syncfusion**
-→ HARD RULE VIOLATION — Creates tech debt, inconsistent with team direction
+**❌ Using Sf* data entry controls (SfTextBox, SfComboBox, SfDateTimePicker)**
+→ Not Designer-compatible; not in project pattern; no ThemeManager styling exists for them
 
-**✅ Use ONLY Syncfusion components: sfForm, SfTextBox, SfComboBox, SfDateTimePicker, SfDataGrid**
+**✅ Use standard .NET controls: TextBox, ComboBox, DateTimePicker, CheckBox, DataGridView**
+
+---
+
+**❌ Designing controls in code instead of Designer**
+→ Harder to maintain; harder to visualize layout; inconsistent with team approach
+
+**✅ Design entire form in Visual Studio Designer; set properties there; only wire up styling/events in constructor**
 
 ---
 
 **❌ Leaving form in Sizeable mode by default**
-→ HARD RULE VIOLATION — Forms must have fixed size; sets FormBorderStyle to FixedToolWindow or Fixed
+→ HARD RULE VIOLATION — Users drag corners, breaking layouts
 
-**✅ Always set Form.FormBorderStyle = FormBorderStyle.Fixed or FormBorderStyle.FixedToolWindow**
+**✅ Set `FormBorderStyle = FormBorderStyle.Fixed` or `FormBorderStyle.FixedToolWindow` in Designer**
+
+---
+
+**❌ Forgetting form base class (inheriting from Form instead of SfForm)**
+→ Loses Syncfusion styling, theming infrastructure, Escape-to-close handler
+
+**✅ Always inherit from `SfForm` (from Syncfusion.WinForms.Controls), not Form or MetroForm**
 
 ---
 
 **❌ Date picker without dd/MM/yyyy format**
-→ Users confused by format; inconsistent with project standard
+→ Users confused by format; inconsistent with project standard; machine locale overrides
 
-**✅ Always use SfDateTimePicker with format string `dd/MM/yyyy`; verify picker loads on form init**
+**✅ In Designer: Set DateTimePicker `Format = Short` + `CustomFormat = "dd/MM/yyyy"`**
 
 ---
 
 **❌ Hand-coding colors, fonts, spacing**
-→ Breaks consistency; duplicates ThemeManager logic; breaks theme updates
+→ Breaks consistency; duplicates ThemeManager logic; breaks when theme updates
 
-**✅ Call ThemeManager.cs functions for all styling—colors, fonts, spacing. Never hard-code UI constants.**
+**✅ Call ThemeManager methods: `ApplyModernTheme()`, `StylePrimaryButton()`, `StyleDataGrid()`, etc.**
 
 ---
 
-**❌ Designing without researching existing Syncfusion forms**
-→ Creates inconsistent UI; new patterns contradict codebase
+**❌ Designing without studying existing forms**
+→ Creates inconsistent UI; copies broken patterns; ignores real constraints
 
-**✅ Use Semble MCP to find 3+ existing Syncfusion forms first; document their choices**
+**✅ Find + read 2–3 existing forms (especially PlPaymentStatus.cs); document their choices**
 
 ---
 
 **❌ Over-validating in real-time**
-→ Form feels sluggish (async SKU lookups on every keystroke)
+→ Form feels sluggish (async DB lookups on every keystroke)
 
-**✅ Real-time validation for format only (email regex, max length); async validation only on blur or submit**
+**✅ Real-time validation for format only (max length, regex); async validation only on blur or submit**
 
 ---
 
 **❌ Using MessageBox for all errors**
 → Blocks user; feels hostile. Can't see form while error is displayed.
 
-**✅ Layered approach: ErrorProvider (field-level) + toast (form-level) + MessageBox (critical only)**
+**✅ Layered approach: ErrorProvider (field-level) + toast (form-level) + MessageBox (critical/unrecoverable only)**
 
 ---
 
-**❌ Generic error messages everywhere**
+**❌ Generic error messages**
 → User can't fix the error ("Invalid input")
 
-**✅ Be specific: "SKU must be 5–10 digits. You entered 'abc' which is invalid."**
+**✅ Be specific and actionable: "Date must be between 01/01/2025 and 31/12/2025. You entered 15/01/2026."**
 
 ---
 
 **❌ Forgetting accessibility (no labels, tab order broken, no keyboard shortcuts)**
-→ Keyboard users blocked; screen readers confused
+→ Keyboard users blocked; screen readers confused; forms unusable
 
-**✅ Checklist: Link labels to controls in Designer.cs; test tab order (Tab key navigates logically); document keyboard shortcuts**
+**✅ Checklist: Label + TextBox pairs set up in Designer; Tab order logical; Button shortcuts documented**
 
 ## Model Selection Quick Reference
 
