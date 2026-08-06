@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+.env.local
+
+# Build/Dist
+dist/
+build/
+*.log
+
+# Project-specific
+.claude/settings.local.json
+.superpowers/
