@@ -27,6 +27,7 @@ This skill provides a decision framework for component selection, a complexity r
 - ✋ **Human-readable grid headers** — `HeaderText` is never the raw DB/property name: `"Name"` not `"name"`, `"Input At"` not `"input_date"`, `"Edited By"` not `"edit_by"` — Title Case, spaces, no underscores
 - ✋ **Timestamp columns show date AND time** — Any grid column bound to a database `timestamp` field (`input_date`, `edit_by`, `created_at`, `updated_at`, etc.) must format as `dd/MM/yyyy HH:mm`, never date-only — truncating a timestamp to a date silently discards real information
 - ✋ **Numeric text fields align right** — Any `TextBox` displaying a numeric value (quantity, amount, price, total, count) must set `TextAlign = HorizontalAlignment.Right` in the Designer. Text/code fields (names, stockcodes, descriptions) stay left-aligned (the default) — only numeric-holding fields change
+- ✋ **Row layout alignment** — Before placing any text/input field, deliberately choose its alignment: horizontal `TextAlign` (left for text/codes, right for numbers) AND vertical position relative to its row. Every control sharing a row (Label + TextBox/ComboBox/DateTimePicker/Button) must share the same `Height` and be aligned consistently (same vertical center, or bottom-aligned) — never place same-row controls at independently eyeballed Y-coordinates. See Row Alignment below
 - ✋ **Self-learning** — When skill receives new constraints via prompt, update skill for future applications
 
 ## When to Use
@@ -148,6 +149,20 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 | **Tab control** | `TabControl` | ✅ Yes | For multi-step forms; Designer support excellent |
 
 **Never use:** SfTextBox, SfComboBox, SfDateTimePicker, SfButton, SfLabel, SfCheckBox, SfRadioButton (not Designer-friendly; not in project pattern)
+
+### Row Alignment (Labels, TextBoxes, Buttons)
+
+Every time a text/input field is added, work out its alignment on two axes before wiring up the next control:
+
+1. **Horizontal (`TextAlign`).** Left for text/codes (the default), right for numeric values (see the numeric hard rule above). Decide this per-field, not by leaving whatever the Toolbox default happens to be.
+
+2. **Vertical (row position).** Controls sharing a horizontal row — a `Label` next to its `TextBox`/`ComboBox`/`DateTimePicker`, a row of buttons, a filter strip — must line up:
+   - Give every same-row `TextBox`/`ComboBox`/`DateTimePicker` the **same `Height`** (they default to slightly different heights depending on control type and font — check and correct this)
+   - Vertically center `Label` controls against that height: `label.Location.Y ≈ input.Location.Y + (input.Height - label.Height) / 2`, not an eyeballed guess
+   - Buttons on the same row as inputs match the row's height (or are deliberately taller/shorter with a clear reason, e.g. a primary action button), never left at the Toolbox default while neighboring inputs use a different height
+   - When laying out multiple rows (a filter panel, a details header), keep consistent row spacing (e.g. one row every 30-40px) rather than ad hoc gaps
+
+**Red flag:** If two controls on the same row have Y-coordinates that differ by an odd, un-computed amount (e.g. `Location = (100, 15)` next to `Location = (270, 18)` with no reasoning behind the 3px difference), stop and compute the correct offset instead of eyeballing it.
 
 ### Grid Column Configuration (DataGridView)
 
@@ -327,6 +342,7 @@ ThemeManager.StylePrimaryButton(_buttonSubmit);  // ✅ CORRECT
 - [ ] **Grid headers:** Every `HeaderText` humanized — no raw db/property names?
 - [ ] **Grid timestamps:** Any column backed by a `timestamp` field formatted `dd/MM/yyyy HH:mm`, not date-only?
 - [ ] **Numeric field alignment:** Every TextBox holding a quantity/amount/price/total/count set to `TextAlign = HorizontalAlignment.Right`?
+- [ ] **Row alignment:** Same-row controls (Label + input, button rows) share the same Height and are vertically aligned by computed offset, not eyeballed?
 
 ## Common Mistakes
 
@@ -459,6 +475,13 @@ All forms use the same project application icon for consistent branding.
 → Quantities/amounts/totals read poorly left-aligned; digits don't line up vertically for scanning/comparison
 
 **✅ Set `TextAlign = HorizontalAlignment.Right` on every TextBox holding a numeric value; leave text/code fields left-aligned**
+
+---
+
+**❌ Eyeballing Y-coordinates for same-row controls (labels, inputs, buttons at mismatched heights/offsets)**
+→ Rows look subtly crooked; reads as unpolished even when no one can say exactly why
+
+**✅ Give same-row inputs matching `Height`, vertically center Labels against that height, and use a computed offset — never a guessed pixel value**
 
 ## Model Selection Quick Reference
 
