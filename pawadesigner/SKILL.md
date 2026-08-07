@@ -26,6 +26,7 @@ This skill provides a decision framework for component selection, a complexity r
 - ✋ **Grid columns must fill the width** — If the sum of a grid's fixed column widths is less than the grid's available width, set exactly one column's `AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill` so there's no dead whitespace. Pick a free-text column (Name, Description, Notes) — never an ID, code, date, or numeric column
 - ✋ **Human-readable grid headers** — `HeaderText` is never the raw DB/property name: `"Name"` not `"name"`, `"Input At"` not `"input_date"`, `"Edited By"` not `"edit_by"` — Title Case, spaces, no underscores
 - ✋ **Timestamp columns show date AND time** — Any grid column bound to a database `timestamp` field (`input_date`, `edit_by`, `created_at`, `updated_at`, etc.) must format as `dd/MM/yyyy HH:mm`, never date-only — truncating a timestamp to a date silently discards real information
+- ✋ **Numeric text fields align right** — Any `TextBox` displaying a numeric value (quantity, amount, price, total, count) must set `TextAlign = HorizontalAlignment.Right` in the Designer. Text/code fields (names, stockcodes, descriptions) stay left-aligned (the default) — only numeric-holding fields change
 - ✋ **Self-learning** — When skill receives new constraints via prompt, update skill for future applications
 
 ## When to Use
@@ -134,7 +135,7 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 | Need | Component | Designer Support | Notes |
 |------|-----------|------------------|-------|
 | **Form base** | `SfForm` | ✅ Yes | Inherit from Syncfusion.WinForms.Controls.SfForm |
-| **Single-line text** | `TextBox` | ✅ Yes | Standard .NET; ThemeManager styles at runtime |
+| **Single-line text** | `TextBox` | ✅ Yes | Standard .NET; ThemeManager styles at runtime. `TextAlign = Right` if the field holds a numeric value |
 | **Multiline text** | `TextBox` Multiline=true | ✅ Yes | Set Height in Designer |
 | **Dropdown/combo** | `ComboBox` | ✅ Yes | DropDownStyle.DropDownList for read-only; DataSource for populate |
 | **Date picker** | `DateTimePicker` | ✅ Yes | `Format = Short` + `CustomFormat = "dd/MM/yyyy"` in Designer |
@@ -325,6 +326,7 @@ ThemeManager.StylePrimaryButton(_buttonSubmit);  // ✅ CORRECT
 - [ ] **Grid fill column:** If columns don't already fill the grid width, is exactly one appropriate (free-text) column set to `AutoSizeMode = Fill`?
 - [ ] **Grid headers:** Every `HeaderText` humanized — no raw db/property names?
 - [ ] **Grid timestamps:** Any column backed by a `timestamp` field formatted `dd/MM/yyyy HH:mm`, not date-only?
+- [ ] **Numeric field alignment:** Every TextBox holding a quantity/amount/price/total/count set to `TextAlign = HorizontalAlignment.Right`?
 
 ## Common Mistakes
 
@@ -450,6 +452,13 @@ All forms use the same project application icon for consistent branding.
 → Silently discards the time portion of a value stored with time; misleads users comparing same-day entries
 
 **✅ Check the schema — if the column is a `timestamp`, format as `dd/MM/yyyy HH:mm`, not `dd/MM/yyyy`**
+
+---
+
+**❌ Leaving numeric TextBoxes left-aligned (the .NET default)**
+→ Quantities/amounts/totals read poorly left-aligned; digits don't line up vertically for scanning/comparison
+
+**✅ Set `TextAlign = HorizontalAlignment.Right` on every TextBox holding a numeric value; leave text/code fields left-aligned**
 
 ## Model Selection Quick Reference
 
