@@ -22,6 +22,10 @@ This skill provides a decision framework for component selection, a complexity r
 - ✋ **Date pickers** — Always format as `dd/MM/yyyy` short date using `DateTimePicker.Format` property
 - ✋ **Styling & reusable functions** → **Always use ThemeManager.cs** (D:\cp\pp\pawapos-shared\ThemeManager.cs) via `ThemeManager.ApplyModernTheme(this)` and `ThemeManager.StyleXXX()` methods
 - ✋ **Project application icon** — All forms must use the project's application icon: `Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath)` (ensures consistent branding across all forms)
+- ✋ **No grid row headers** — Always set `RowHeadersVisible = false` on every data grid; PawaPos grids never show the row-selector header column
+- ✋ **Grid columns must fill the width** — If the sum of a grid's fixed column widths is less than the grid's available width, set exactly one column's `AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill` so there's no dead whitespace. Pick a free-text column (Name, Description, Notes) — never an ID, code, date, or numeric column
+- ✋ **Human-readable grid headers** — `HeaderText` is never the raw DB/property name: `"Name"` not `"name"`, `"Input At"` not `"input_date"`, `"Edited By"` not `"edit_by"` — Title Case, spaces, no underscores
+- ✋ **Timestamp columns show date AND time** — Any grid column bound to a database `timestamp` field (`input_date`, `edit_by`, `created_at`, `updated_at`, etc.) must format as `dd/MM/yyyy HH:mm`, never date-only — truncating a timestamp to a date silently discards real information
 - ✋ **Self-learning** — When skill receives new constraints via prompt, update skill for future applications
 
 ## When to Use
@@ -134,7 +138,7 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 | **Multiline text** | `TextBox` Multiline=true | ✅ Yes | Set Height in Designer |
 | **Dropdown/combo** | `ComboBox` | ✅ Yes | DropDownStyle.DropDownList for read-only; DataSource for populate |
 | **Date picker** | `DateTimePicker` | ✅ Yes | `Format = Short` + `CustomFormat = "dd/MM/yyyy"` in Designer |
-| **Data grid** | `DataGridView` | ✅ Yes | `ReadOnly=true`, `AllowUserToAddRows=false`, `AllowUserToDeleteRows=false` |
+| **Data grid** | `DataGridView` | ✅ Yes | `ReadOnly=true`, `AllowUserToAddRows=false`, `AllowUserToDeleteRows=false`, `RowHeadersVisible=false`, one column `AutoSizeMode=Fill`, humanized `HeaderText`, timestamp columns formatted `dd/MM/yyyy HH:mm` — see Grid Column Configuration below |
 | **Button** | `Button` | ✅ Yes | Style via `ThemeManager.StylePrimaryButton()` etc. in constructor |
 | **Checkbox** | `CheckBox` | ✅ Yes | Standard .NET; no Sf* alternative |
 | **Radio button** | `RadioButton` | ✅ Yes | Standard .NET; no Sf* alternative |
@@ -143,6 +147,49 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 | **Tab control** | `TabControl` | ✅ Yes | For multi-step forms; Designer support excellent |
 
 **Never use:** SfTextBox, SfComboBox, SfDateTimePicker, SfButton, SfLabel, SfCheckBox, SfRadioButton (not Designer-friendly; not in project pattern)
+
+### Grid Column Configuration (DataGridView)
+
+Every grid needs four things decided at design time, before columns are added in the Designer:
+
+1. **No row headers.** Set `RowHeadersVisible = false` in the Designer. PawaPos grids never show the row-selector header column.
+
+2. **One fill column.** Sum the fixed widths of every other column. If the total is less than the grid's available width, pick the single best column to absorb the remainder and set only that column's `AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill`. Every other column stays fixed-width (`NotSet` with an explicit `Width`). Choose the fill column by content, not position:
+   - Prefer a free-text column (Name, Description, Notes, Remarks)
+   - Never make an ID, code, date, checkbox, or numeric/currency column the fill column — fixed-width keeps those readable instead of stranding them with excess whitespace
+   - If no free-text column exists, pick whichever column's values vary most in length
+
+3. **Human-readable headers.** `HeaderText` is never the raw column/property name. Translate to Title Case with spaces:
+
+   | DataPropertyName | HeaderText |
+   |---|---|
+   | `name` | Name |
+   | `stockcode` | Stock Code |
+   | `input_date` | Input At |
+   | `edit_by` | Edited By |
+   | `counted_by` | Counted By |
+   | `doc_no` | Document No. |
+   | `br_code` | Branch |
+
+4. **Timestamps format as date + time.** If the underlying database column is a `timestamp` (check the table schema — don't assume from the name alone), set that column's `DefaultCellStyle.Format = "dd/MM/yyyy HH:mm"` in the Designer. Never let it fall back to date-only or a raw `ToString()` — a `timestamp` column showing only `15/03/2026` silently discards the time it was actually recorded at.
+
+**Example (Designer-generated code):**
+```csharp
+this.dgvResults.RowHeadersVisible = false;
+
+this.colName.HeaderText = "Name";
+this.colName.DataPropertyName = "name";
+this.colName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill; // the one fill column
+
+this.colStockcode.HeaderText = "Stock Code";
+this.colStockcode.DataPropertyName = "stockcode";
+this.colStockcode.Width = 100;
+
+this.colInputDate.HeaderText = "Input At";
+this.colInputDate.DataPropertyName = "input_date";
+this.colInputDate.DefaultCellStyle.Format = "dd/MM/yyyy HH:mm"; // timestamp column - date AND time
+this.colInputDate.Width = 130;
+```
 
 ### Designer-First Design Pattern
 
@@ -274,6 +321,10 @@ ThemeManager.StylePrimaryButton(_buttonSubmit);  // ✅ CORRECT
 - [ ] **Security assumptions:** Single-factor or multi-factor? Employee-only? Offline support?
 - [ ] **Testing plan:** How will I test validation? Edge cases identified?
 - [ ] **No DevComponents:** Verified form uses ONLY Syncfusion (no DotNetBar, no DevComponents)?
+- [ ] **Grid row headers:** `RowHeadersVisible = false` set on every grid?
+- [ ] **Grid fill column:** If columns don't already fill the grid width, is exactly one appropriate (free-text) column set to `AutoSizeMode = Fill`?
+- [ ] **Grid headers:** Every `HeaderText` humanized — no raw db/property names?
+- [ ] **Grid timestamps:** Any column backed by a `timestamp` field formatted `dd/MM/yyyy HH:mm`, not date-only?
 
 ## Common Mistakes
 
@@ -371,6 +422,34 @@ All forms use the same project application icon for consistent branding.
 → Keyboard users blocked; screen readers confused; forms unusable
 
 **✅ Checklist: Label + TextBox pairs set up in Designer; Tab order logical; Button shortcuts documented**
+
+---
+
+**❌ Leaving grid row headers visible**
+→ Adds a dead selector column no one uses; not the PawaPos convention
+
+**✅ Set `RowHeadersVisible = false` on every DataGridView**
+
+---
+
+**❌ Leaving dead whitespace when columns don't fill the grid width**
+→ Looks unfinished; wastes screen space, especially on wide/maximized forms
+
+**✅ Set exactly one appropriate column's `AutoSizeMode = Fill` (a free-text column — never an ID/code/date/number column)**
+
+---
+
+**❌ Using raw column/property names as HeaderText (`stockcode`, `input_date`, `edit_by`)**
+→ Looks unfinished; forces the user to mentally translate database naming
+
+**✅ Humanize every HeaderText: `Stock Code`, `Input At`, `Edited By`**
+
+---
+
+**❌ Formatting a timestamp column as date-only**
+→ Silently discards the time portion of a value stored with time; misleads users comparing same-day entries
+
+**✅ Check the schema — if the column is a `timestamp`, format as `dd/MM/yyyy HH:mm`, not `dd/MM/yyyy`**
 
 ## Model Selection Quick Reference
 
