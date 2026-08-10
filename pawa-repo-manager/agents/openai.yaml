@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pawa Repo Manager"
+  short_description: "Audit and safely synchronize workspace Git repositories"
+  default_prompt: "Use $pawa-repo-manager to audit or safely synchronize the configured workspace repositories."
