@@ -31,8 +31,11 @@ The skill name is `pawa-repo-manager`; its display name is **Pawa Repo Manager**
 
 ## Workspace registry
 
-The workspace registry is `D:\cp\pp\repo.json`. It is separate from the
-reusable skill and contains repository policy, not cached status.
+The workspace registry is `repo.json` at the workspace root. For this workspace
+that is `D:\cp\pp\repo.json`; the manager must resolve the root from the
+manifest location so the same skill works from another machine or operating
+system. It is separate from the reusable skill and contains repository policy,
+not cached status.
 
 Each entry records:
 
@@ -72,7 +75,9 @@ It separately identifies:
 
 Remote URLs are normalized for comparison and credentials are redacted in all
 output. Before any push or remote mutation, the configured identity must match
-the fetched remote identity and the user-approved target.
+the fetched remote identity and the user-approved target. Remote repair must
+never infer a replacement URL: the user must provide or explicitly approve the
+complete new URL.
 
 ## Operating modes
 
@@ -92,8 +97,9 @@ Execute only operations allowed by policy and explicitly approved by the user.
 Fast-forward-only updates are the default safe mutation. Pushes, upstream setup,
 remote repairs, merges, rebases, and moves require exact-target confirmation.
 
-Every operation ends with a table containing one row for every touched or
-evaluated repository:
+Audit and plan actions report every evaluated repository. Mutating actions report
+every touched repository and any dependency that blocked it. Every action ends
+with a table:
 
 | Repository | Action | Before | Result | After | Notes |
 |---|---|---|---|---|---|
@@ -110,13 +116,18 @@ failed repositories. A final status check is mandatory before reporting success.
 - Never overwrite local modifications or untracked files.
 - Never merge or rebase divergent histories automatically.
 - Never push without approval of the exact repository, branch, remote, and
-  commit range.
+  commit range. The approval preview must include commit subjects and the
+  destination remote URL.
 - Never modify excluded paths unless the user explicitly includes them.
 - Never trust a changed or unverified remote URL.
 - Stop a batch when an unexpected conflict, permission failure, or identity
   mismatch occurs.
 - Use a workspace lock to prevent concurrent manager actions.
 - Preserve an action log and a resumable failure report.
+
+The lock must be created atomically and contain the process, host, start time,
+operation, and manager version. A stale lock requires an explicit override and
+must be preserved in the action log.
 
 ## Synchronization policy
 
@@ -126,13 +137,23 @@ fast-forward a clean, behind-only repository when policy allows. Dirty,
 diverged, missing-remote, or suspicious repositories are reported with a safe
 next action and left untouched.
 
+It must also classify detached HEADs, unborn repositories, tags checked out as
+worktrees, submodules, and linked worktrees. These states are never silently
+converted to ordinary branches.
+
 The manager must never interpret “fetch succeeded” as “repository synced.” It
 must verify the final branch and worktree state after every mutation.
 
 ## Installation and updates
 
-The canonical package provides installers for both Claude and Codex. Installation
-must:
+The canonical package provides installers for both Claude and Codex. By default,
+the Codex installer targets `$CODEX_HOME/skills/pawa-repo-manager`, falling back
+to the user's `.codex/skills/pawa-repo-manager` directory. The Claude installer
+targets the user's global `.claude/skills/pawa-repo-manager` directory, with an
+explicit configuration override. Installers must display the resolved paths
+before writing and verify the installed version afterward.
+
+Installation must:
 
 - validate the package before installation;
 - install the same skill version into both target locations;
@@ -142,6 +163,34 @@ must:
 
 The skill package version and registry schema version are independent.
 
+## Commands
+
+The skill must document and implement these commands:
+
+- `audit` — read-only inventory and current status.
+- `plan-sync` — fetch and show safe and risky proposed actions.
+- `sync` — execute approved safe actions and produce the final table.
+- `push` — preview exact commit ranges and require explicit approval.
+- `install` — install or update the skill in Claude and Codex.
+- `verify` — validate the skill, registry, installation, and remotes.
+- `unlock` — inspect and explicitly clear a stale workspace lock.
+
+Commands must return a useful exit status: success only when all requested
+actions completed; a distinct blocked/partial status when work was skipped or
+blocked; and failure when an unexpected operation error occurs.
+
+## Failure, logging, and recovery
+
+Independent safe operations may continue after a repository is blocked, but the
+batch must stop on an unexpected conflict, permission error, identity mismatch,
+or lock violation. The final report must identify all completed, skipped,
+blocked, and failed operations and provide a resumable next action.
+
+Action logs must redact access tokens, passwords, credential-bearing URLs,
+authorization headers, and sensitive command output. Each log entry records the
+repository, operation, before state, approval, command class, result, after
+state, and manager version without exposing secrets.
+
 ## Testing
 
 Automated tests must cover clean/synced, dirty, ahead, behind, divergent,
@@ -150,7 +199,9 @@ worktree, excluded path, credential-redaction, lock contention, permission
 failure, and interrupted-action recovery scenarios.
 
 Tests must verify that dangerous operations are refused and that every action
-produces the required per-repository summary.
+produces the required per-repository summary. They must also cover detached
+HEAD, unborn repositories, worktrees, submodules, stale locks, partial batches,
+exit statuses, installation overrides, and secret redaction.
 
 ## Success criteria
 
