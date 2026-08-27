@@ -7,7 +7,7 @@ description: Use when designing forms for PawaPos project—before choosing comp
 
 ## Overview
 
-Form design for PawaPos uses **SfForm base class** + **standard .NET controls** (TextBox, ComboBox, DateTimePicker, etc.), leverages **ThemeManager.cs** for all styling, and follows the **Visual Studio Designer-first approach**. Design focuses on assessing complexity early, anchoring to Designer-compatible patterns, and systematically validating assumptions.
+Form design for PawaPos uses **SfForm base class** plus supported Syncfusion WinForms controls where available, leverages **ThemeManager.cs** for all styling, and follows the **Visual Studio Designer-first approach**. If an exact Syncfusion equivalent is unavailable in the project’s referenced assemblies, retain the closest compatible control and document the exception.
 
 This skill provides a decision framework for component selection, a complexity rubric for model choice, validation patterns, and mandatory compliance rules.
 
@@ -16,7 +16,7 @@ This skill provides a decision framework for component selection, a complexity r
 **These rules are absolute. No exceptions.**
 
 - ✋ **Form base class must be SfForm** — Not MetroForm, not Form; inherit from Syncfusion.WinForms.Controls.SfForm
-- ✋ **Data entry controls are standard .NET** — TextBox, ComboBox, DateTimePicker, CheckBox, DataGridView (NOT Sf* alternatives)
+- ✋ **Control selection requires an assembly audit** — Replace standard controls with supported Syncfusion equivalents when available, and preserve controls only when no compatible equivalent exists or behavior would be lost
 - ✋ **Designer-first design** — Every control must be editable in Visual Studio Designer; no dynamic-only controls
 - ✋ **NEVER leave forms in Sizeable mode** — Set FormBorderStyle to Fixed or FixedToolWindow
 - ✋ **Date pickers** — Always format as `dd/MM/yyyy` short date using `DateTimePicker.Format` property
@@ -29,6 +29,40 @@ This skill provides a decision framework for component selection, a complexity r
 - ✋ **Numeric text fields align right** — Any `TextBox` displaying a numeric value (quantity, amount, price, total, count) must set `TextAlign = HorizontalAlignment.Right` in the Designer. Text/code fields (names, stockcodes, descriptions) stay left-aligned (the default) — only numeric-holding fields change
 - ✋ **Row layout alignment** — Before placing any text/input field, deliberately choose its alignment: horizontal `TextAlign` (left for text/codes, right for numbers) AND vertical position relative to its row. Every control sharing a row (Label + TextBox/ComboBox/DateTimePicker/Button) must share the same `Height` and be aligned consistently (same vertical center, or bottom-aligned) — never place same-row controls at independently eyeballed Y-coordinates. See Row Alignment below
 - ✋ **Self-learning** — When skill receives new constraints via prompt, update skill for future applications
+
+## Form Refactor Audit Rule
+
+When changing or modernizing an existing form, audit the complete form before
+editing it. Inspect the form code, designer file, project references, event
+handlers, data-binding methods, and every control already present.
+
+For each control, identify whether a supported Syncfusion equivalent exists in
+the project’s referenced assemblies. When one exists, replace the control and
+update its designer declaration, properties, events, selection APIs, and
+data-binding code. Do not replace controls mechanically: if no compatible
+equivalent is installed or the replacement would remove behavior, retain the
+original control, document the exception, and identify the dependency or API
+work needed for a later migration.
+
+Preserve validation, keyboard shortcuts, database queries, sorting, filtering,
+selection behavior, formatting, row highlighting, enabled/read-only states,
+layout, and user feedback.
+
+## Post-Refactor Regression Audit
+
+After changing a form, perform a before-versus-after audit and explicitly check:
+
+- Every original control and named field still exists or has a documented replacement.
+- All original events remain wired to handlers with compatible event arguments.
+- Save, refresh, close, lookup, validation, and navigation flows remain intact.
+- Data-binding fields, column mappings, sorting, filtering, selection, and row counts work.
+- Formatting, fonts, colors, enabled/read-only states, tab order, anchors, and fixed-size behavior are preserved or intentionally changed.
+- Grid behavior still works: hidden identifiers, fill columns, human-readable headers, timestamp formats, and conditional row styling.
+- The designer opens without parser, serialization, missing-method, or missing-control errors.
+- The project compiles and the relevant form is exercised manually.
+
+The final report must list behavior that could not be verified, retained WinForms
+controls, and known differences from the pre-refactor form.
 
 ## When to Use
 
@@ -129,7 +163,7 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 
 ## Phase 3: Component Selection
 
-**Form base is SfForm; data entry controls are standard .NET. Designer-first approach only.**
+**Form base is SfForm; use supported Syncfusion controls where available, with documented fallbacks. Designer-first approach only.**
 
 ### Component Reference
 
@@ -148,7 +182,9 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 | **Flow layout** | `FlowLayoutPanel` | ✅ Yes | For filter rows, button groups |
 | **Tab control** | `TabControl` | ✅ Yes | For multi-step forms; Designer support excellent |
 
-**Never use:** SfTextBox, SfComboBox, SfDateTimePicker, SfButton, SfLabel, SfCheckBox, SfRadioButton (not Designer-friendly; not in project pattern)
+Use the exact Syncfusion control types available in the project’s referenced
+assemblies. Do not invent a type or add an unapproved dependency merely to
+avoid documenting a fallback.
 
 ### Row Alignment (Labels, TextBoxes, Buttons)
 
@@ -211,7 +247,7 @@ this.colInputDate.Width = 130;
 
 **Step 1: Design in Visual Studio Designer**
 1. Open Form in Designer
-2. Drag standard .NET controls from Toolbox (TextBox, ComboBox, DateTimePicker, etc.)
+2. Drag supported Syncfusion controls from the Toolbox; use standard WinForms controls only for documented fallbacks
 3. Set properties in Designer:
    - Names: `_textboxName`, `_comboboxStatus`, `_dateFrom`, `_buttonSubmit`
    - Text: Labels, button captions
@@ -346,10 +382,10 @@ ThemeManager.StylePrimaryButton(_buttonSubmit);  // ✅ CORRECT
 
 ## Common Mistakes
 
-**❌ Using Sf* data entry controls (SfTextBox, SfComboBox, SfDateTimePicker)**
-→ Not Designer-compatible; not in project pattern; no ThemeManager styling exists for them
+**❌ Replacing controls without auditing their APIs and behavior**
+→ Events, selection models, data binding, formatting, or keyboard behavior can silently break.
 
-**✅ Use standard .NET controls: TextBox, ComboBox, DateTimePicker, CheckBox, DataGridView**
+**✅ Audit first, migrate supported controls, then run the Post-Refactor Regression Audit**
 
 ---
 
