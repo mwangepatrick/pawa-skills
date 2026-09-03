@@ -228,12 +228,14 @@ Every grid needs four things decided at design time, before columns are added in
 
 1. **No row headers.** Set `RowHeadersVisible = false` in the Designer. PawaPos grids never show the row-selector header column.
 
-2. **One fill column.** Sum the fixed widths of every other column. If the total is less than the grid's available width, pick the single best column to absorb the remainder and set only that column's `AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill`. Every other column stays fixed-width (`NotSet` with an explicit `Width`). Choose the fill column by content, not position:
+2. **Visible grid border.** Every grid styled with `ThemeManager.StyleDataGrid()` must retain a visible outer border. Set `BorderStyle = BorderStyle.FixedSingle` after applying the theme (or update the shared theme implementation so the rule is centralized). Do not leave the grid borderless.
+
+3. **One fill column.** Sum the fixed widths of every other column. If the total is less than the grid's available width, pick the single best column to absorb the remainder and set only that column's `AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill`. Every other column stays fixed-width (`NotSet` with an explicit `Width`). Choose the fill column by content, not position:
    - Prefer a free-text column (Name, Description, Notes, Remarks)
    - Never make an ID, code, date, checkbox, or numeric/currency column the fill column — fixed-width keeps those readable instead of stranding them with excess whitespace
    - If no free-text column exists, pick whichever column's values vary most in length
 
-3. **Human-readable headers.** `HeaderText` is never the raw column/property name. Translate to Title Case with spaces:
+4. **Human-readable headers.** `HeaderText` is never the raw column/property name. Translate to Title Case with spaces:
 
    | DataPropertyName | HeaderText |
    |---|---|
@@ -245,7 +247,7 @@ Every grid needs four things decided at design time, before columns are added in
    | `doc_no` | Document No. |
    | `br_code` | Branch |
 
-4. **Timestamps format as date + time.** If the underlying database column is a `timestamp` (check the table schema — don't assume from the name alone), set that column's `DefaultCellStyle.Format = "dd/MM/yyyy HH:mm"` in the Designer. Never let it fall back to date-only or a raw `ToString()` — a `timestamp` column showing only `15/03/2026` silently discards the time it was actually recorded at.
+5. **Timestamps format as date + time.** If the underlying database column is a `timestamp` (check the table schema — don't assume from the name alone), set that column's `DefaultCellStyle.Format = "dd/MM/yyyy HH:mm"` in the Designer. Never let it fall back to date-only or a raw `ToString()` — a `timestamp` column showing only `15/03/2026` silently discards the time it was actually recorded at.
 
 **Example (Designer-generated code):**
 ```csharp
