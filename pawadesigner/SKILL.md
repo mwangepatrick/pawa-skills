@@ -11,6 +11,22 @@ Form design for PawaPos uses **SfForm base class** plus supported Syncfusion Win
 
 This skill provides a decision framework for component selection, a complexity rubric for model choice, validation patterns, and mandatory compliance rules.
 
+## ASCII Layout Sketches
+
+When explaining a proposed form layout, alignment issue, or before-versus-after
+change, include a compact ASCII sketch when it materially improves clarity. Keep
+it schematic rather than pixel-perfect, and label the affected controls using
+their Designer names where possible. For example:
+
+```text
+Before:  [Label]      [Input]
+After:   [Label] [Input________________] [Action]
+                 same row height / centered label
+```
+
+Use ASCII sketches in design reviews and handoff notes; do not replace the
+Designer-first implementation or visual Designer verification with a sketch.
+
 ## Hard Rules (Non-Negotiable)
 
 **These rules are absolute. No exceptions.**
@@ -48,11 +64,17 @@ Preserve validation, keyboard shortcuts, database queries, sorting, filtering,
 selection behavior, formatting, row highlighting, enabled/read-only states,
 layout, and user feedback.
 
+For checkbox fields, use `Syncfusion.Windows.Forms.Tools.CheckBoxAdv` when
+`Syncfusion.Tools.Windows.dll` is referenced. Do not use
+`Syncfusion.Windows.Forms.ThemedCheckButton` as a checkbox replacement: it is
+a themed button and can render button-style or unreliable checkbox visuals.
+
 ## Post-Refactor Regression Audit
 
 After changing a form, perform a before-versus-after audit and explicitly check:
 
 - Every original control and named field still exists or has a documented replacement.
+- Checkbox fields use `CheckBoxAdv`, not `ThemedCheckButton`; verify checked and unchecked visuals as well as the `Checked` value.
 - All original events remain wired to handlers with compatible event arguments.
 - Save, refresh, close, lookup, validation, and navigation flows remain intact.
 - Data-binding fields, column mappings, sorting, filtering, selection, and row counts work.
@@ -103,7 +125,7 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 | Pattern | Example | Why | Reference |
 |---------|---------|-----|-----------|
 | Form base class | `SfForm` | Consistent with company modernization | PlPaymentStatus.cs line 10 |
-| Input controls | TextBox, ComboBox, DateTimePicker, CheckBox | Designer-compatible; ThemeManager styles them | PlPaymentStatus.cs lines 12–18 |
+| Input controls | TextBox, ComboBox, DateTimePicker, CheckBoxAdv | Designer-compatible; use the exact referenced Syncfusion type | PlPaymentStatus.cs lines 12–18 |
 | Error presentation | `Shared.toast()`, ErrorProvider | Non-blocking errors shown to user | Check actual error handling in forms |
 | Validation timing | Real-time (TextChanged) vs pre-submit vs async | Affects responsiveness and UX | Study existing form validation events |
 | Date format | dd/MM/yyyy via `CustomFormat` property | REQUIRED standard format | DateTimePicker.CustomFormat = "dd/MM/yyyy" |
@@ -176,7 +198,7 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 | **Date picker** | `DateTimePicker` | ✅ Yes | `Format = Short` + `CustomFormat = "dd/MM/yyyy"` in Designer |
 | **Data grid** | `DataGridView` | ✅ Yes | `ReadOnly=true`, `AllowUserToAddRows=false`, `AllowUserToDeleteRows=false`, `RowHeadersVisible=false`, one column `AutoSizeMode=Fill`, humanized `HeaderText`, timestamp columns formatted `dd/MM/yyyy HH:mm` — see Grid Column Configuration below |
 | **Button** | `Button` | ✅ Yes | Style via `ThemeManager.StylePrimaryButton()` etc. in constructor |
-| **Checkbox** | `CheckBox` | ✅ Yes | Standard .NET; no Sf* alternative |
+| **Checkbox** | `Syncfusion.Windows.Forms.Tools.CheckBoxAdv` | ✅ Yes | Preferred checkbox when `Syncfusion.Tools.Windows.dll` is referenced; supports `Checked` and `CheckState` |
 | **Radio button** | `RadioButton` | ✅ Yes | Standard .NET; no Sf* alternative |
 | **Label** | `Label` | ✅ Yes | AutoSize=true; associates with input via tab order |
 | **Flow layout** | `FlowLayoutPanel` | ✅ Yes | For filter rows, button groups |
