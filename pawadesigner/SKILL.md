@@ -47,9 +47,34 @@ Before changing a form, perform this mandatory gate:
 
 This gate is mandatory because designer failures commonly appear as misleading secondary errors such as “variable is undeclared or was never assigned.” The first missing assembly or constructor exception is the root signal; all later CodeDom errors are usually cascades.
 
+### Golden Rule: Standardize Action-Form State Buttons
+
+All action/data-entry forms—not reports—must separate **state-selection buttons** from **command buttons**.
+
+- Put `New`, `Edit`, and `Delete` state buttons in a single row at the top of the input-controls box, above the first input row and inside the form's normal layout boundary. If the buttons sit outside a group box, move the input group down far enough to leave a deliberate gap; never let the buttons overlap the group border or caption.
+- Center the state-button row against the input box, not against the whole form. Calculate the starting X position from the box width: `boxLeft + (boxWidth - totalButtonRowWidth) / 2`. Use equal button widths and equal gaps unless the labels require an intentional variation.
+- Use the shared `PawaStateButton` control from `D:\cp\pp\pawa-controls\PawaControls`, with `PawaStateButtonGroup` and `PawaFormState` for mutual exclusion and state coordination. Do not create form-specific painted button variants.
+- State buttons always have a white background with a solid border and matching text. Inactive state: 1px border and normal text. Active state: stronger/thicker border and bold text. Hover/pressed feedback may darken the border/text but must never fill the button with a color.
+- Default state colors are New = blue/teal, Edit = amber/orange, and Delete = red. The color communicates the selected form mode; it does not mean that the operation has already been committed.
+- New, Edit, and Delete are mutually exclusive. Selecting one activates it and deactivates the others. Delete must enter delete state only and wait for the existing form workflow; preserve patterns such as `PrepareDelete(); SendKeys.Send("{F11}");`. Never perform an immediate destructive delete from the state-button click unless the form's existing contract explicitly requires it.
+- Keep `Save`, `Cancel`/`Close`, `Reset`, and other command/utility buttons unchanged. In particular, do not replace the existing login/action command styling: Save remains the established orange button and Cancel/Close remains the established black button.
+- State buttons must remain editable in Visual Studio Designer, use explicit designer fields/properties, and be independent of Syncfusion so they cannot introduce another third-party design-time dependency.
+
+For a standard action form, the layout should read:
+
+```text
+        [ New ]    [ Edit ]    [ Delete ]
+┌─ Input Details ───────────────────────────────┐
+│ Label:      [________________________]         │
+│ Label:      [________________________]         │
+│                         [Save] [Close]         │
+└───────────────────────────────────────────────┘
+```
+
 - ✋ **Form base class must be SfForm** — Not MetroForm, not Form; inherit from Syncfusion.WinForms.Controls.SfForm
 - ✋ **Control selection requires an assembly audit** — Replace standard controls with supported Syncfusion equivalents when available, and preserve controls only when no compatible equivalent exists or behavior would be lost
 - ✋ **Designer-first design** — Every control must be editable in Visual Studio Designer; no dynamic-only controls
+- ✋ **Action-form state controls** — Non-report action forms use centered `PawaStateButton` controls for New/Edit/Delete above the input box; Save/Cancel retain their existing command-button styles
 - ✋ **NEVER leave forms in Sizeable mode** — Set FormBorderStyle to Fixed or FixedToolWindow
 - ✋ **Date pickers** — Always format as `dd/MM/yyyy` short date using `DateTimePicker.Format` property
 - ✋ **Styling & reusable functions** → **Always use ThemeManager.cs** (D:\cp\pp\pawapos-shared\ThemeManager.cs) via `ThemeManager.ApplyModernTheme(this)` and `ThemeManager.StyleXXX()` methods
