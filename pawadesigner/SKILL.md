@@ -31,6 +31,22 @@ Designer-first implementation or visual Designer verification with a sketch.
 
 **These rules are absolute. No exceptions.**
 
+### Golden Rule: Prove Designer Loadability Before Migrating a Form
+
+**Never begin a WinForms control migration until the complete design-time dependency and load path has been audited and proven.** A successful application build or runtime launch is not evidence that the Visual Studio designer can load the form.
+
+Before changing a form, perform this mandatory gate:
+
+1. Confirm the exact solution and project being edited. Record the absolute `.sln`, `.csproj`, form source, and designer paths. Do not infer the project from a similarly named open Visual Studio window.
+2. Use the known-good reference project (normally `pawapos-bo`) to compare both `packages.config` and explicit `.csproj` references. For every third-party control, include the complete direct and transitive dependency closure—not just the top-level package. Every required assembly must have the matching version, `HintPath`, and `Private=True`/Copy Local behavior where applicable.
+3. Build the exact configuration Visual Studio Designer uses, normally `Debug|Any CPU`, from a clean project state. Verify every required DLL exists in that configuration's actual output directory and that its assembly version matches the reference project. Do not rely on stale DLLs from `bin`, `obj`, another platform, or another project.
+4. Check architecture compatibility with the designer host. Visual Studio's modern WinForms designer is 64-bit; an `x86` project or x86-only dependency can fail design-time loading even when the application runs. Keep runtime host architecture requirements separate from the class-library architecture where possible.
+5. Ensure the form constructor is design-time safe. Call `InitializeComponent()` first, then return when `LicenseManager.UsageMode == LicenseUsageMode.Designtime` before database access, application-singleton access, device initialization, file I/O, or other runtime startup logic.
+6. Keep `*.Designer.cs` conventional and designer-generated: explicit field declarations, explicit control construction, explicit property assignments, and explicit event wiring. Do not use compressed one-line helpers, dynamic-only control factories, inline object graphs, or runtime-only initialization for controls that must be editable in Designer.
+7. Test the design-time load path before declaring the migration complete: the form must open in Visual Studio without parser, serialization, missing-assembly, missing-control, or `InitializeComponent` errors. If a third-party control cannot be loaded by the host, use and document a design-time placeholder/runtime control fallback rather than repeatedly adding guessed references.
+
+This gate is mandatory because designer failures commonly appear as misleading secondary errors such as “variable is undeclared or was never assigned.” The first missing assembly or constructor exception is the root signal; all later CodeDom errors are usually cascades.
+
 - ✋ **Form base class must be SfForm** — Not MetroForm, not Form; inherit from Syncfusion.WinForms.Controls.SfForm
 - ✋ **Control selection requires an assembly audit** — Replace standard controls with supported Syncfusion equivalents when available, and preserve controls only when no compatible equivalent exists or behavior would be lost
 - ✋ **Designer-first design** — Every control must be editable in Visual Studio Designer; no dynamic-only controls
