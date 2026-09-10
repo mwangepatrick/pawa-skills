@@ -81,10 +81,12 @@ For a standard action form, the layout should read:
 - ✋ **Project application icon** — All forms must use the project's application icon: `Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath)` (ensures consistent branding across all forms)
 - ✋ **No grid row headers** — Always set `RowHeadersVisible = false` on every data grid; PawaPos grids never show the row-selector header column
 - ✋ **Grid columns must fill the width** — If the sum of a grid's fixed column widths is less than the grid's available width, set exactly one column's `AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill` so there's no dead whitespace. Pick a free-text column (Name, Description, Notes) — never an ID, code, date, or numeric column
+- ✋ **SfDataGrid columns must fill the width** — For `Syncfusion SfDataGrid`, set exactly one free-text `GridColumn` (Name, Description, Notes) to `AutoSizeColumnsMode = Syncfusion.WinForms.DataGrid.Enums.AutoSizeColumnsMode.Fill`; keep code, checkbox, status, date, and numeric columns fixed-width
 - ✋ **Human-readable grid headers** — `HeaderText` is never the raw DB/property name: `"Name"` not `"name"`, `"Input At"` not `"input_date"`, `"Edited By"` not `"edit_by"` — Title Case, spaces, no underscores
 - ✋ **Timestamp columns show date AND time** — Any grid column bound to a database `timestamp` field (`input_date`, `edit_by`, `created_at`, `updated_at`, etc.) must format as `dd/MM/yyyy HH:mm`, never date-only — truncating a timestamp to a date silently discards real information
-- ✋ **Numeric text fields align right** — Any `TextBox` displaying a numeric value (quantity, amount, price, total, count) must set `TextAlign = HorizontalAlignment.Right` in the Designer. Text/code fields (names, stockcodes, descriptions) stay left-aligned (the default) — only numeric-holding fields change
+- ✋ **Numeric and compact identifier fields align right** — Any `TextBox` displaying a numeric value or short operational identifier (quantity, amount, price, total, count, username, operator code, branch code, department code) should set `TextAlign = HorizontalAlignment.Right` in the Designer. Names, descriptions, and ordinary text remain left-aligned unless the form has a documented scanning convention
 - ✋ **Row layout alignment** — Before placing any text/input field, deliberately choose its alignment: horizontal `TextAlign` (left for text/codes, right for numbers) AND vertical position relative to its row. Every control sharing a row (Label + TextBox/ComboBox/DateTimePicker/Button) must share the same `Height` and be aligned consistently (same vertical center, or bottom-aligned) — never place same-row controls at independently eyeballed Y-coordinates. See Row Alignment below
+- ✋ **Programmatic reset must not trigger user validation** — Before clearing or reloading controls programmatically, set the form mode so `Leave`/blur validation is suppressed. Shared clear/reset helpers must not produce false required-field errors while a form is loading, cancelling, or switching records
 - ✋ **Self-learning** — When skill receives new constraints via prompt, update skill for future applications
 
 ## Form Refactor Audit Rule
@@ -122,6 +124,7 @@ After changing a form, perform a before-versus-after audit and explicitly check:
 - Formatting, fonts, colors, enabled/read-only states, tab order, anchors, and fixed-size behavior are preserved or intentionally changed.
 - Grid behavior still works: hidden identifiers, fill columns, human-readable headers, timestamp formats, and conditional row styling.
 - The designer opens without parser, serialization, missing-method, or missing-control errors.
+- Custom `PawaControls` controls used by the form have a verified project reference, matching output DLL, design-time-safe constructor, and successful Designer instantiation.
 - The project compiles and the relevant form is exercised manually.
 
 The final report must list behavior that could not be verified, retained WinForms
@@ -238,7 +241,9 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 | **Dropdown/combo** | `ComboBox` | ✅ Yes | DropDownStyle.DropDownList for read-only; DataSource for populate |
 | **Date picker** | `DateTimePicker` | ✅ Yes | `Format = Short` + `CustomFormat = "dd/MM/yyyy"` in Designer |
 | **Data grid** | `DataGridView` | ✅ Yes | `ReadOnly=true`, `AllowUserToAddRows=false`, `AllowUserToDeleteRows=false`, `RowHeadersVisible=false`, one column `AutoSizeMode=Fill`, humanized `HeaderText`, timestamp columns formatted `dd/MM/yyyy HH:mm` — see Grid Column Configuration below |
+| **SfDataGrid** | `Syncfusion.WinForms.DataGrid.SfDataGrid` | ✅ Yes | Use fixed widths for compact columns and exactly one free-text `GridColumn` with `AutoSizeColumnsMode=Fill` — see Grid Column Configuration below |
 | **Button** | `Button` | ✅ Yes | Style via `ThemeManager.StylePrimaryButton()` etc. in constructor |
+| **Utility button** | `PawaControls.PawaButton` | ✅ Yes | Optional for Refresh, Export, Reset, and similar reusable actions; declare, construct, position, and wire it in the Designer, never dynamically in the theme |
 | **Checkbox** | `Syncfusion.Windows.Forms.Tools.CheckBoxAdv` | ✅ Yes | Preferred checkbox when `Syncfusion.Tools.Windows.dll` is referenced; supports `Checked` and `CheckState` |
 | **Radio button** | `RadioButton` | ✅ Yes | Standard .NET; no Sf* alternative |
 | **Label** | `Label` | ✅ Yes | AutoSize=true; associates with input via tab order |
