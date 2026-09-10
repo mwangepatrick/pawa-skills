@@ -59,6 +59,7 @@ All action/data-entry forms—not reports—must separate **state-selection butt
 - New, Edit, and Delete are mutually exclusive. Selecting one activates it and deactivates the others. Delete must enter delete state only and wait for the existing form workflow; preserve patterns such as `PrepareDelete(); SendKeys.Send("{F11}");`. Never perform an immediate destructive delete from the state-button click unless the form's existing contract explicitly requires it.
 - Keep `Save`, `Cancel`/`Close`, `Reset`, and other command/utility buttons unchanged. In particular, do not replace the existing login/action command styling: Save remains the established orange button and Cancel/Close remains the established black button.
 - State buttons must remain editable in Visual Studio Designer, use explicit designer fields/properties, and be independent of Syncfusion so they cannot introduce another third-party design-time dependency.
+- State-button captions must expose keyboard mnemonics in the Designer, using labels such as `&New`, `&Edit`, and `&Delete`; keep the mnemonic unique within the action row.
 
 For a standard action form, the layout should read:
 
