@@ -78,11 +78,15 @@ For a standard action form, the layout should read:
 - ✋ **Action-form state controls** — Non-report action forms use centered `PawaStateButton` controls for New/Edit/Delete above the input box; Save/Cancel retain their existing command-button styles
 - ✋ **NEVER leave forms in Sizeable mode** — Set FormBorderStyle to Fixed or FixedToolWindow
 - ✋ **Date pickers** — Always format as `dd/MM/yyyy` short date using `DateTimePicker.Format` property
-- ✋ **Styling & reusable functions** → **Always use ThemeManager.cs** (D:\cp\pp\pawapos-shared\ThemeManager.cs) via `ThemeManager.ApplyModernTheme(this)` and `ThemeManager.StyleXXX()` methods
+- ✋ **Styling & reusable functions** → **Always use the project's referenced ThemeManager** (normally `PawaControls.ThemeManager` in D:\cp\pp\pawa-controls\PawaControls\ThemeManager.cs) via `ApplyModernTheme(this)` and available `StyleXXX()` methods; verify the source/DLL before calling a helper
 - ✋ **Project application icon** — All forms must use the project's application icon: `Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath)` (ensures consistent branding across all forms)
-- ✋ **No grid row headers** — Always set `RowHeadersVisible = false` on every data grid; PawaPos grids never show the row-selector header column
+- ✋ **No grid row headers** — Set `RowHeadersVisible = false` for DataGridView and `ShowRowHeader = false` for SfDataGrid; PawaPos grids never show the row-selector header column
 - ✋ **Grid columns must fill the width** — If the sum of a grid's fixed column widths is less than the grid's available width, set exactly one column's `AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill` so there's no dead whitespace. Pick a free-text column (Name, Description, Notes) — never an ID, code, date, or numeric column
 - ✋ **SfDataGrid columns must fill the width** — For `Syncfusion SfDataGrid`, set exactly one free-text `GridColumn` (Name, Description, Notes) to `AutoSizeColumnsMode = Syncfusion.WinForms.DataGrid.Enums.AutoSizeColumnsMode.Fill`; keep code, checkbox, status, date, and numeric columns fixed-width
+- ✋ **Listing grids select full rows** — For SfDataGrid receipt/detail listings, set `SelectionUnit = SelectionUnit.Row`, `NavigationMode = NavigationMode.Row`, and `ShowRowHeader = false` explicitly in the Designer. Preserve intentional multiple selection; use `GridSelectionMode.Single` only for single-record flows. Use shared brand colors for headers, row selection, current-cell styling and alternating rows. See [Grid and display-field consistency](references/grid-display-consistency.md).
+- ✋ **Display-field state is deliberate** — `ReadOnly = true` prevents editing but still permits focus/copy; it is not equivalent to `Enabled = false`. When disabled display fields are requested, set `Enabled = false`, `ReadOnly = true`, and `TabStop = false`, retain readable themed disabled colors, and preserve the requested horizontal alignment. Do not disable editable inputs or copyable read-only fields indiscriminately.
+- ✋ **Text centers inside display fields** — Vertically center the text inside fixed-height display fields, separately from aligning controls within their row. Verify centering after showing/populating the form and after text, font, size or handle changes. Use an available shared helper or the audited control-specific approach in [Grid and display-field consistency](references/grid-display-consistency.md).
+- ✋ **Receipt payment placeholders are scoped** — In receipt payment details, omit rows whose payment amount is exactly zero from both display and export; retain negative refunds. Do not apply this filter to unrelated grids, infer missing amounts as zero, or change stored payment records.
 - ✋ **Human-readable grid headers** — `HeaderText` is never the raw DB/property name: `"Name"` not `"name"`, `"Input At"` not `"input_date"`, `"Edited By"` not `"edit_by"` — Title Case, spaces, no underscores
 - ✋ **Timestamp columns show date AND time** — Any grid column bound to a database `timestamp` field (`input_date`, `edit_by`, `created_at`, `updated_at`, etc.) must format as `dd/MM/yyyy HH:mm`, never date-only — truncating a timestamp to a date silently discards real information
 - ✋ **Uppercase text inputs by default** — All editable text inputs accept uppercase text unless the user explicitly directs otherwise for that field or form. This includes names, codes, references, descriptions, reasons, notes, multiline inputs and editable combo-box text. Set `CharacterCasing = System.Windows.Forms.CharacterCasing.Upper` explicitly in `InitializeComponent()` for standard TextBox and Syncfusion TextBoxExt controls. Use the supported equivalent for other controls; if unavailable, normalize typed and pasted input while preserving caret/selection and Designer editability. Do not rely on keypress filtering alone. Preserve read-only historical values; this rule does not authorize rewriting existing database records. Document any explicitly requested casing exception.
@@ -125,6 +129,9 @@ After changing a form, perform a before-versus-after audit and explicitly check:
 - Data-binding fields, column mappings, sorting, filtering, selection, and row counts work.
 - Formatting, fonts, colors, enabled/read-only states, tab order, anchors, and fixed-size behavior are preserved or intentionally changed.
 - Grid behavior still works: hidden identifiers, fill columns, human-readable headers, timestamp formats, and conditional row styling.
+- Receipt/detail listings retain full-row mouse and keyboard selection, brand selection/current-cell colors and alternating rows; selected rows remain readable over conditional styling.
+- Disabled display fields skip Tab navigation, keep the intended left/right alignment and center their text after showing, loading values, and font/size/handle changes. Copyable read-only fields remain usable.
+- Receipt payment display and export both omit zero amounts while retaining positive payments and negative refunds; unrelated grids keep meaningful zero values.
 - The designer opens without parser, serialization, missing-method, or missing-control errors.
 - Custom `PawaControls` controls used by the form have a verified project reference, matching output DLL, design-time-safe constructor, and successful Designer instantiation.
 - The project compiles and the relevant form is exercised manually.
@@ -151,11 +158,19 @@ controls, and known differences from the pre-refactor form.
 
 **Step 1: Review ThemeManager.cs**
 ```
-Location: D:\cp\pp\pawapos-shared\ThemeManager.cs
+Location: D:\cp\pp\pawa-controls\PawaControls\ThemeManager.cs (PawaControls.ThemeManager)
+Legacy projects: resolve their actual ThemeManager reference rather than assuming this path
 Purpose: Central repository for styling, colors, fonts, and button/control theming
-Available methods: ApplyModernTheme(), StylePrimaryButton(), StyleDataGrid(), StyleDateTimePicker(), etc.
+Verified methods in PawaControls: ApplyModernTheme(), StylePrimaryButton(), StyleSecondaryButton(), StyleCloseButton(), StyleDataGrid()
 Always: Check available methods before hand-coding any styling
 ```
+
+`StyleDataGrid()` currently targets standard DataGridView, and
+`ApplyModernTheme()` does not provide complete SfDataGrid styling. Recommended
+shared helpers are `StyleSfDataGrid(...)` and `StyleDisplayTextBox(...)`; these
+names are proposed contracts, not existing APIs. Check the referenced source/DLL
+before calling them. Read [Grid and display-field consistency](references/grid-display-consistency.md)
+when implementing or reviewing listing grids and historical detail fields.
 
 **Step 2: Find Existing Form Examples**
 Grep/search for forms using SfForm base class with Designer-based controls:
@@ -246,6 +261,8 @@ Grep/search for forms using SfForm base class with Designer-based controls:
 | **SfDataGrid** | `Syncfusion.WinForms.DataGrid.SfDataGrid` | ✅ Yes | Use fixed widths for compact columns and exactly one free-text `GridColumn` with `AutoSizeColumnsMode=Fill` — see Grid Column Configuration below |
 | **Button** | `Button` | ✅ Yes | Style via `ThemeManager.StylePrimaryButton()` etc. in constructor |
 | **Utility button** | `PawaControls.PawaButton` | ✅ Yes | Optional for Refresh, Export, Reset, and similar reusable actions; declare, construct, position, and wire it in the Designer, never dynamically in the theme |
+| **Action state button** | `PawaControls.PawaStateButton` | ✅ Yes | White background, solid state-colored border/text; use for New/Edit/Delete modes only |
+| **Action state group** | `PawaControls.PawaStateButtonGroup` | ✅ Yes | Enforces one active form state; pair with `PawaFormState` |
 | **Checkbox** | `Syncfusion.Windows.Forms.Tools.CheckBoxAdv` | ✅ Yes | Preferred checkbox when `Syncfusion.Tools.Windows.dll` is referenced; supports `Checked` and `CheckState` |
 | **Radio button** | `RadioButton` | ✅ Yes | Standard .NET; no Sf* alternative |
 | **Label** | `Label` | ✅ Yes | AutoSize=true; associates with input via tab order |
@@ -260,7 +277,7 @@ avoid documenting a fallback.
 
 Every time a text/input field is added, work out its alignment on two axes before wiring up the next control:
 
-1. **Horizontal (`TextAlign`).** Left for text/codes (the default), right for numeric values (see the numeric hard rule above). Decide this per-field, not by leaving whatever the Toolbox default happens to be.
+1. **Horizontal (`TextAlign`).** Left for names/descriptions; right for numeric values and compact operational identifiers (see the numeric hard rule above). Preserve explicitly requested existing left/right alignment. Decide this per-field, not by leaving whatever the Toolbox default happens to be.
 
 2. **Vertical (row position).** Controls sharing a horizontal row — a `Label` next to its `TextBox`/`ComboBox`/`DateTimePicker`, a row of buttons, a filter strip — must line up:
    - Give every same-row `TextBox`/`ComboBox`/`DateTimePicker` the **same `Height`** (they default to slightly different heights depending on control type and font — check and correct this)
@@ -445,12 +462,15 @@ ThemeManager.StylePrimaryButton(_buttonSubmit);  // ✅ CORRECT
 - [ ] **Security assumptions:** Single-factor or multi-factor? Employee-only? Offline support?
 - [ ] **Testing plan:** How will I test validation? Edge cases identified?
 - [ ] **No DevComponents:** Verified form uses ONLY Syncfusion (no DotNetBar, no DevComponents)?
-- [ ] **Grid row headers:** `RowHeadersVisible = false` set on every grid?
+- [ ] **Grid row headers:** `RowHeadersVisible = false` for DataGridView or `ShowRowHeader = false` for SfDataGrid?
 - [ ] **Grid fill column:** If columns don't already fill the grid width, is exactly one appropriate (free-text) column set to `AutoSizeMode = Fill`?
 - [ ] **Grid headers:** Every `HeaderText` humanized — no raw db/property names?
 - [ ] **Grid timestamps:** Any column backed by a `timestamp` field formatted `dd/MM/yyyy HH:mm`, not date-only?
 - [ ] **Numeric field alignment:** Every TextBox holding a quantity/amount/price/total/count set to `TextAlign = HorizontalAlignment.Right`?
 - [ ] **Row alignment:** Same-row controls (Label + input, button rows) share the same Height and are vertically aligned by computed offset, not eyeballed?
+- [ ] **SfDataGrid selection and branding:** Full-row selection/navigation, hidden row headers, deliberate selection mode, branded selected/current cells and alternating rows verified?
+- [ ] **Display-field state and text centering:** Read-only versus disabled chosen deliberately; disabled fields skip Tab, remain readable and center their text through the display/load lifecycle without changing horizontal alignment?
+- [ ] **Receipt payment filtering:** Zero amounts omitted consistently from display/export, negative refunds retained and unrelated zero-valued data preserved?
 
 ## Common Mistakes
 
@@ -554,7 +574,7 @@ All forms use the same project application icon for consistent branding.
 **❌ Leaving grid row headers visible**
 → Adds a dead selector column no one uses; not the PawaPos convention
 
-**✅ Set `RowHeadersVisible = false` on every DataGridView**
+**✅ Set `RowHeadersVisible = false` on every DataGridView and `ShowRowHeader = false` on every SfDataGrid**
 
 ---
 
@@ -582,7 +602,7 @@ All forms use the same project application icon for consistent branding.
 **❌ Leaving numeric TextBoxes left-aligned (the .NET default)**
 → Quantities/amounts/totals read poorly left-aligned; digits don't line up vertically for scanning/comparison
 
-**✅ Set `TextAlign = HorizontalAlignment.Right` on every TextBox holding a numeric value; leave text/code fields left-aligned**
+**✅ Set `TextAlign = HorizontalAlignment.Right` for numeric values and compact operational identifiers; keep names/descriptions left-aligned and preserve explicitly requested existing alignment**
 
 ---
 
