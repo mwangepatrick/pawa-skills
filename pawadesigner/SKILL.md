@@ -1,6 +1,6 @@
 ---
 name: pawadesigner
-description: Use when designing forms for PawaPos project—before choosing components, layout, or validation patterns
+description: Use when designing or modifying PawaPos forms, listings, reports, dialogs, buttons, dropdowns, layouts, or validation patterns
 ---
 
 # PawaDesigner
@@ -56,8 +56,8 @@ All action/data-entry forms—not reports—must separate **state-selection butt
 - Use the shared `PawaStateButton` control from `D:\cp\pp\pawa-controls\PawaControls`, with `PawaStateButtonGroup` and `PawaFormState` for mutual exclusion and state coordination. Do not create form-specific painted button variants.
 - State buttons always have a white background with a solid border and matching text. Inactive state: 1px border and normal text. Active state: stronger/thicker border and bold text. Hover/pressed feedback may darken the border/text but must never fill the button with a color.
 - Default state colors are New = blue/teal, Edit = amber/orange, and Delete = red. The color communicates the selected form mode; it does not mean that the operation has already been committed.
-- New, Edit, and Delete are mutually exclusive. Selecting one activates it and deactivates the others. Delete must enter delete state only and wait for the existing form workflow; preserve patterns such as `PrepareDelete(); SendKeys.Send("{F11}");`. Never perform an immediate destructive delete from the state-button click unless the form's existing contract explicitly requires it.
-- Keep `Save`, `Cancel`/`Close`, `Reset`, and other command/utility buttons unchanged. In particular, do not replace the existing login/action command styling: Save remains the established orange button and Cancel/Close remains the established black button.
+- New, Edit, and Delete are mutually exclusive. Selecting one activates it and deactivates the others. Delete must enter delete state only and wait for the existing form workflow; preserve patterns such as `PrepareDelete(); SendKeys.Send("{F11}");`. Never commit a destructive delete from a state-selector click; an existing immediate-delete action must be represented as a separate destructive command.
+- Preserve command behavior while enforcing the mandatory button roles below: Save remains orange, Cancel/Close black, and supporting Export/Print/Reset grey. Existing inconsistent styling is not an exception.
 - State buttons must remain editable in Visual Studio Designer, use explicit designer fields/properties, and be independent of Syncfusion so they cannot introduce another third-party design-time dependency.
 - State-button captions must expose keyboard mnemonics in the Designer, using labels such as `&New`, `&Edit`, and `&Delete`; keep the mnemonic unique within the action row.
 
@@ -71,6 +71,16 @@ For a standard action form, the layout should read:
 │                         [Save] [Close]         │
 └───────────────────────────────────────────────┘
 ```
+
+### Golden Rule: Consistent Buttons and Uppercase Dropdown Labels
+
+Every new or modified form must follow [Mandatory Button and Dropdown Standards](references/buttons-dropdowns.md). These are strict application-wide rules, including reports and listings:
+
+- Use six explicit button families: primary orange; secondary/utility grey; Close/Cancel black; service/tools blue; white outlined New/Edit/Delete state selectors; and filled red final destructive commands. Save/Submit/main Apply are primary; Export/Print/Reset are secondary. Selecting Delete mode must remain separate from committing a destructive operation.
+- Command buttons use flat square styling, Verdana 8, 36px logical height, consistent spacing and minimum widths. Designer and runtime sizing must agree. Use the shared state controls for state-selector dimensions and behavior.
+- Define normal, hover, pressed, disabled, and keyboard-focus states centrally in the project's referenced ThemeManager/shared controls. Grey/blue buttons must not inherit orange pressed colors. Disabled commands use a clear grey appearance with readable muted text; disabled state selectors remain white with grey outlines/text.
+- Every dropdown choice and selected label must display in FULL UPPERCASE, even when its underlying value has different casing. Bind human-readable uppercase display labels separately from original values/codes. Preserve filtering, saving, and case-sensitive value contracts; logic must use the selected value rather than display text. Do not rewrite stored data or rely on CharacterCasing alone for bound choices.
+- Audit every button and dropdown on the touched form, including dynamically populated choices, disabled controls, menus, reset/reload, keyboard navigation, and design-time/runtime appearance. Do not invent missing styling helpers or copy historical inconsistencies.
 
 - ✋ **Form base class must be SfForm** — Not MetroForm, not Form; inherit from Syncfusion.WinForms.Controls.SfForm
 - ✋ **Control selection requires an assembly audit** — Replace standard controls with supported Syncfusion equivalents when available, and preserve controls only when no compatible equivalent exists or behavior would be lost
@@ -91,7 +101,7 @@ For a standard action form, the layout should read:
 - ✋ **Timestamp columns show date AND time** — Any grid column bound to a database `timestamp` field (`input_date`, `edit_by`, `created_at`, `updated_at`, etc.) must format as `dd/MM/yyyy HH:mm`, never date-only — truncating a timestamp to a date silently discards real information
 - ✋ **Uppercase text inputs by default** — All editable text inputs accept uppercase text unless the user explicitly directs otherwise for that field or form. This includes names, codes, references, descriptions, reasons, notes, multiline inputs and editable combo-box text. Set `CharacterCasing = System.Windows.Forms.CharacterCasing.Upper` explicitly in `InitializeComponent()` for standard TextBox and Syncfusion TextBoxExt controls. Use the supported equivalent for other controls; if unavailable, normalize typed and pasted input while preserving caret/selection and Designer editability. Do not rely on keypress filtering alone. Preserve read-only historical values; this rule does not authorize rewriting existing database records. Document any explicitly requested casing exception.
 - ✋ **Numeric and compact identifier fields align right** — Any `TextBox` displaying a numeric value or short operational identifier (quantity, amount, price, total, count, username, operator code, branch code, department code) should set `TextAlign = HorizontalAlignment.Right` in the Designer. Names, descriptions, and ordinary text remain left-aligned unless the form has a documented scanning convention
-- ✋ **Row layout alignment** — Before placing any text/input field, deliberately choose its alignment: horizontal `TextAlign` (left for text/codes, right for numbers) AND vertical position relative to its row. Every control sharing a row (Label + TextBox/ComboBox/DateTimePicker/Button) must share the same `Height` and be aligned consistently (same vertical center, or bottom-aligned) — never place same-row controls at independently eyeballed Y-coordinates. See Row Alignment below
+- ✋ **Row layout alignment** — Before placing any text/input field, deliberately choose horizontal `TextAlign` (left for text/codes, right for numbers) and vertical row position. Comparable same-row inputs must share a Height. Command buttons retain 36px logical height and state selectors retain shared control sizing; align labels, inputs and buttons to a common vertical center using computed offsets, never independently eyeballed Y-coordinates. See Row Alignment below
 - ✋ **Programmatic reset must not trigger user validation** — Before clearing or reloading controls programmatically, set the form mode so `Leave`/blur validation is suppressed. Shared clear/reset helpers must not produce false required-field errors while a form is loading, cancelling, or switching records
 - ✋ **Self-learning** — When skill receives new constraints via prompt, update skill for future applications
 
@@ -125,6 +135,8 @@ After changing a form, perform a before-versus-after audit and explicitly check:
 - Every original control and named field still exists or has a documented replacement.
 - Checkbox fields use `CheckBoxAdv`, not `ThemedCheckButton`; verify checked and unchecked visuals as well as the `Checked` value.
 - All original events remain wired to handlers with compatible event arguments.
+- Every button uses its mandated semantic family; normal/hover/pressed/disabled/focus states, command height, spacing, and Designer/runtime sizing match [Mandatory Button and Dropdown Standards](references/buttons-dropdowns.md).
+- Every dropdown's expanded and selected labels are uppercase and human-readable; original values, selection/reset behavior, filtering and saving are preserved independently of display text.
 - Save, refresh, close, lookup, validation, and navigation flows remain intact.
 - Data-binding fields, column mappings, sorting, filtering, selection, and row counts work.
 - Formatting, fonts, colors, enabled/read-only states, tab order, anchors, and fixed-size behavior are preserved or intentionally changed.
@@ -148,8 +160,8 @@ controls, and known differences from the pre-refactor form.
 - Planning accessibility or multi-language support
 
 **Do NOT use for:**
-- Tweaking existing forms (style changes, minor refactors)
-- Choosing colors or fonts (use pawa-ui-authoring skill for branding)
+- Unrelated minor refactors that do not touch form presentation or behavior
+- Creating a new brand palette (use pawa-ui-authoring); existing form buttons and dropdowns must still follow this skill's mandatory standards
 - Fixing bugs in deployed forms (use systematic-debugging skill first)
 
 ## Phase 1: Anchor to Existing Form Patterns
@@ -282,7 +294,7 @@ Every time a text/input field is added, work out its alignment on two axes befor
 2. **Vertical (row position).** Controls sharing a horizontal row — a `Label` next to its `TextBox`/`ComboBox`/`DateTimePicker`, a row of buttons, a filter strip — must line up:
    - Give every same-row `TextBox`/`ComboBox`/`DateTimePicker` the **same `Height`** (they default to slightly different heights depending on control type and font — check and correct this)
    - Vertically center `Label` controls against that height: `label.Location.Y ≈ input.Location.Y + (input.Height - label.Height) / 2`, not an eyeballed guess
-   - Buttons on the same row as inputs match the row's height (or are deliberately taller/shorter with a clear reason, e.g. a primary action button), never left at the Toolbox default while neighboring inputs use a different height
+   - Command buttons retain the mandatory 36px logical height and state selectors retain shared control sizing. Align them to the input row's vertical center with a computed offset; do not shrink commands to input height or leave Toolbox defaults
    - When laying out multiple rows (a filter panel, a details header), keep consistent row spacing (e.g. one row every 30-40px) rather than ad hoc gaps
 
 **Red flag:** If two controls on the same row have Y-coordinates that differ by an odd, un-computed amount (e.g. `Location = (100, 15)` next to `Location = (270, 18)` with no reasoning behind the 3px difference), stop and compute the correct offset instead of eyeballing it.
@@ -366,7 +378,7 @@ public class MyForm : SfForm
         
         // Style buttons
         ThemeManager.StylePrimaryButton(_buttonSubmit);
-        ThemeManager.StyleSecondaryButton(_buttonCancel);
+        ThemeManager.StyleCloseButton(_buttonCancel);
         
         // Style data grid if present
         ThemeManager.StyleDataGrid(_dataGridView);
@@ -380,9 +392,10 @@ public class MyForm : SfForm
 
 Available methods (check ThemeManager.cs for complete list):
 - `ApplyModernTheme(form)` — Applies theme to entire form + Escape-to-close handler
-- `StylePrimaryButton(button)` — Primary action (orange/blue)
+- `StylePrimaryButton(button)` — Primary action (orange)
 - `StyleSecondaryButton(button)` — Secondary action (gray)
 - `StyleCloseButton(button)` — Close/Cancel button
+- `StyleAccentButton(button)` — Service/tool entry point (blue); audit pressed and disabled states against the mandatory standards
 - `StyleDataGrid(grid)` — Data grid styling + colors
 - `StyleDateTimePicker(picker)` — Date picker theming
 - (Other control-specific methods as available)
@@ -452,6 +465,8 @@ ThemeManager.StylePrimaryButton(_buttonSubmit);  // ✅ CORRECT
 - [ ] **Model choice:** Complexity score = ___ → Using **Haiku / Sonnet / Opus**
 - [ ] **Component toolkit:** Verified all components are Syncfusion (sfForm, SfTextBox, SfComboBox, etc.)?
 - [ ] **ThemeManager:** Reviewed ThemeManager.cs? Planning to use for all styling/colors/fonts?
+- [ ] **Button roles and states:** Every button assigned the correct applicable family; shared sizing/spacing, disabled grey appearance, role-colored hover/pressed feedback, and keyboard focus verified?
+- [ ] **Dropdown labels and values:** All displayed choices/selected labels FULL UPPERCASE and human-readable; original underlying values preserved and used by filtering/saving/reset?
 - [ ] **Date pickers:** All date input fields use SfDateTimePicker with format `dd/MM/yyyy`? Verified picker loads?
 - [ ] **Form sizing:** Form.FormBorderStyle set to Fixed or FixedToolWindow (NOT Sizeable)?
 - [ ] **Existing patterns:** Researched ≥3 existing Syncfusion forms? Documented pattern (error style, validation timing)?
@@ -467,7 +482,7 @@ ThemeManager.StylePrimaryButton(_buttonSubmit);  // ✅ CORRECT
 - [ ] **Grid headers:** Every `HeaderText` humanized — no raw db/property names?
 - [ ] **Grid timestamps:** Any column backed by a `timestamp` field formatted `dd/MM/yyyy HH:mm`, not date-only?
 - [ ] **Numeric field alignment:** Every TextBox holding a quantity/amount/price/total/count set to `TextAlign = HorizontalAlignment.Right`?
-- [ ] **Row alignment:** Same-row controls (Label + input, button rows) share the same Height and are vertically aligned by computed offset, not eyeballed?
+- [ ] **Row alignment:** Comparable same-row inputs share Height; commands remain 36px and state selectors retain shared sizing; labels, inputs and buttons have a common vertical center established by computed offsets?
 - [ ] **SfDataGrid selection and branding:** Full-row selection/navigation, hidden row headers, deliberate selection mode, branded selected/current cells and alternating rows verified?
 - [ ] **Display-field state and text centering:** Read-only versus disabled chosen deliberately; disabled fields skip Tab, remain readable and center their text through the display/load lifecycle without changing horizontal alignment?
 - [ ] **Receipt payment filtering:** Zero amounts omitted consistently from display/export, negative refunds retained and unrelated zero-valued data preserved?

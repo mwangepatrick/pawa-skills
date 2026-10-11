@@ -14,9 +14,11 @@ Form design skill for PawaPos project—design Syncfusion-based forms with hard 
 - Syncfusion component reference with sub-documentation
 - Validation pattern taxonomy
 - ThemeManager.cs integration
+- Mandatory app-wide button roles and interaction states; uppercase dropdown labels kept separate from underlying values
 - Hard rules enforcement (no DevComponents, no Sizeable mode, dd/MM/yyyy dates)
 
 **Sub-references:**
+- [Button and dropdown standards](./pawadesigner/references/buttons-dropdowns.md) — Required semantic button styles, disabled states, and uppercase display/value separation
 - [SfDateTimePicker](./pawadesigner/references/sfdatetimepicker.md) — Date picker patterns, validation, accessibility
 
 ---
