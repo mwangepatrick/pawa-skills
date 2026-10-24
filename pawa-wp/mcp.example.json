@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "pawa-wp": {
+      "command": "node",
+      "args": ["D:\\cp\\pp\\pawa-skills\\pawa-wp\\src\\index.mjs"],
+      "env": { "PAWA_WP_ALLOW_WRITES": "false" }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "PawaPos Monitor"
+  short_description: "Rank bugs across Sentry, Better Stack and New Relic, read-only"
+  default_prompt: "Use $pawa-monitor to check which monitoring sources are connected, collect recent production bugs, correlate and rank them, and report without changing any issue."

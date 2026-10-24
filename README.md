@@ -4,6 +4,15 @@ A collection of reusable Claude Code skills for PawaPos and related projects. Bu
 
 ## Skills in This Collection
 
+### [pawa-docs](./pawa-docs/)
+Create, update, review, draft, or publish PawaPos customer articles for docs.cosmopawa.com. Includes source/configuration evidence requirements, category and duplicate checks, the Heroic Knowledge Base workflow, and a validated worked example.
+
+**Use when:** Handling customer documentation for docs.cosmopawa.com.
+
+**Validation:** [Evidence, behavioral evaluation and limitations](./pawa-docs/references/validation-report.md).
+
+**WordPress connection:** [pawa-wp](./pawa-wp/) is a documentation-only MCP for this site's Heroic KB articles. REST handles article management; the browser verifies rendering and category placement. Setup and live access verification are separate from installing the skill.
+
 ### 1. [pawadesigner](./pawadesigner/)
 Form design skill for PawaPos project—design Syncfusion-based forms with hard rules for components, styling, date formats, and accessibility.
 

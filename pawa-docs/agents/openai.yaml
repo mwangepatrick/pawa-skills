@@ -1,0 +1,4 @@
+interface:
+  display_name: "PawaPos Documentation"
+  short_description: "Create and update verified PawaPos knowledge-base articles"
+  default_prompt: "Use $pawa-docs to prepare a source-verified article for docs.cosmopawa.com, respecting my draft or publish intent."
