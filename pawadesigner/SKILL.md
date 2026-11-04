@@ -11,6 +11,35 @@ Form design for PawaPos uses **SfForm base class** plus supported Syncfusion Win
 
 This skill provides a decision framework for component selection, a complexity rubric for model choice, validation patterns, and mandatory compliance rules.
 
+## Manual Runtime Testing Through Program.cs
+
+When a PawaPos form needs manual runtime testing, add a temporary direct launch
+in the application's existing `Program.cs`, following the established GL form
+testing pattern. This is the default way to make the form available for the
+user's manual test.
+
+- Trace the exact menu action requested by the user and reuse its form class,
+  constructor arguments, transaction ID and edition-specific selection. For
+  example, Add D/Note uses transaction `162` and `SopTransNoEdit("")`, or
+  `SopWTransNoEdit("")` in wholesale mode; `DeliveryNoteInvoice(false)` is the
+  separate invoice-conversion screen.
+- Place the launch after the existing license, connection/profile, system,
+  user, branch and location initialization. Reuse the established test-session
+  identity and permissions. Initialize any context normally supplied by
+  `Main_Load`, including `PawaPosFin.Main.SetCurrentUser(Pos.CurrentUser)` for
+  finance-dependent forms and `Pos.IsWSale` where the menu uses wholesale mode.
+- Call `Pos.TransactionMaster` with the menu's transaction ID before constructing
+  a transaction-dependent form, handle failed setup, and run the chosen form
+  with `Application.Run`. Return after it closes so the normal main window does
+  not launch too. Preserve the existing queue/report-service cleanup.
+- Finish the source changes, build with the repository's existing script, and
+  identify the compiled executable for the user to run. Report build success
+  separately from manual flows the user has actually exercised.
+- Keep the direct launch available while the user tests. Before a normal release,
+  remove only the temporary startup override and restore normal startup,
+  preserving unrelated `Program.cs` edits. A runtime launch does not establish
+  Visual Studio Designer compatibility.
+
 ## ASCII Layout Sketches
 
 When explaining a proposed form layout, alignment issue, or before-versus-after
