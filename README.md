@@ -4,6 +4,15 @@ A collection of reusable Claude Code skills for PawaPos and related projects. Bu
 
 ## Skills in This Collection
 
+### [pawapos-debugging](./pawapos-debugging/)
+Investigate PawaPos failures using project log memory, local Windows evidence,
+build provenance and the `diagnosing-bugs` workflow. Consults
+[`pawa-monitor`](./pawa-monitor/) when remote evidence is needed or requested.
+
+**Use when:** Debugging PawaPos errors, failed GL previews/posting, crashes,
+incorrect results or slow operations. Start with the affected repository's
+`docs/agents/debugging.md`; monitoring connections remain optional.
+
 ### [pawa-docs](./pawa-docs/)
 Create, update, review, draft, or publish PawaPos customer articles for docs.cosmopawa.com. Includes source/configuration evidence requirements, category and duplicate checks, the Heroic Knowledge Base workflow, and a validated worked example.
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "PawaPos Debugging"
+  short_description: "Debug PawaPos with local logs and targeted monitoring"
+  default_prompt: "Use $pawapos-debugging to investigate this PawaPos failure using local evidence and consult Pawa monitor if remote evidence is needed."
