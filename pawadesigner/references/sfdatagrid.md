@@ -7,7 +7,7 @@ metadata:
 
 # SfDataGrid
 
-**Status: pilot only.** The default PawaPos grid control is still `DataGridView` (see main SKILL.md Grid Column Configuration section). `SfDataGrid` was adopted for one form — `DepartmentalStockSales.cs` — as a scoped experiment. `SfDataGrid` does **not** inherit `DataGridView` (base is `Syncfusion.Windows.Forms.Core.BaseControl`), so `ThemeManager.StyleDataGrid(DataGridView)` will not accept it — style it manually (see below) or add a new `ThemeManager.StyleSfDataGrid()` overload if this becomes the project default (would require adding a `Syncfusion.SfDataGrid.WinForms` reference to `PawaShared.csproj`, which it doesn't have today).
+`Syncfusion.WinForms.DataGrid.SfDataGrid` is supported when its dependencies are present. It does not inherit DataGridView: use verified `PawaControls.ThemeManager.StyleSfDataGrid`. Audit the target source and DLL before migration.
 
 ## Official Docs
 https://help.syncfusion.com/windowsforms/datagrid/gettingstarted
@@ -55,27 +55,15 @@ dgvStockSales.DataSource = someDataTable; // binds directly, same as DataGridVie
 ```
 
 - Column types: `GridTextColumn` (strings/codes, left-aligned by default), `GridNumericColumn` (numbers — set `Format` + `CellStyle.HorizontalAlignment = Right`), also available: `GridDateTimeColumn`, `GridCheckBoxColumn`, `GridComboBoxColumn`, `GridButtonColumn`, `GridHyperlinkColumn`.
-- Fill column: set `AutoSizeColumnsMode = AutoSizeColumnsMode.Fill` on exactly one column (same free-text-column rule as `DataGridView.AutoSizeMode = Fill`) — every other column keeps an explicit `Width`.
+- Fill column: use grid LastColumnFill for a final free-text column, or column Fill elsewhere. Set MinimumWidth, not Width, on the fill column; other columns retain compact explicit widths.
 - Row headers: `ShowRowHeader = false` is the `RowHeadersVisible = false` equivalent.
 - Row/header height: `dgvStockSales.RowHeight` / `dgvStockSales.HeaderRowHeight` (both `int`).
 - Selected row data: `dgvStockSales.SelectedItem` — for a `DataTable`-bound grid this is a `System.Data.DataRowView`, cast it the same way you would `DataGridView.SelectedRows[0].DataBoundItem`.
 - Double-click: subscribe to `CellDoubleClick` (`Syncfusion.WinForms.DataGrid.Events.CellClickEventHandler`, args type `CellClickEventArgs` — has `.DataRow`/`.DataColumn`, but it's simpler to just read `grid.SelectedItem` in the handler like the pilot form does), not a plain `DoubleClick`.
 
-## Manual styling (ThemeManager has no SfDataGrid support yet)
+## Shared styling
 
-Reuse `ThemeManager`'s existing color tokens rather than inventing new literals:
-
-```csharp
-dgvStockSales.Style.HeaderStyle.BackColor = ThemeManager.BrandColors.GridHeaderBackground;
-dgvStockSales.Style.HeaderStyle.TextColor = System.Drawing.Color.White;
-dgvStockSales.Style.HeaderStyle.Font.Bold = true;
-dgvStockSales.Style.HeaderStyle.HorizontalAlignment = System.Windows.Forms.HorizontalAlignment.Center;
-dgvStockSales.Style.SelectionStyle.BackColor = ThemeManager.UIColors.SelectionBackground;
-dgvStockSales.Style.SelectionStyle.TextColor = ThemeManager.UIColors.SelectionForeground;
-dgvStockSales.Style.BorderColor = ThemeManager.UIColors.BorderLight;
-```
-
-`dgvStockSales.Style` is a `DataGridStyle` sub-object (mutate its properties directly, same pattern as `GridColumn.CellStyle`/`HeaderStyle`) — don't try to assign a new `Style` object.
+Use the verified PawaControls.ThemeManager.StyleSfDataGrid helper. [Grid/display consistency](grid-display-consistency.md) owns current selection, striping, conditional highlights, row headers and fill-column rules. Do not copy historical local palette code.
 
 ## Common Mistakes
 

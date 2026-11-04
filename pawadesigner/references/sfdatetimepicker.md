@@ -99,7 +99,7 @@ private async void SubmitButton_Click(object sender, EventArgs e)
     
     if (!isValid)
     {
-        Shared.toast("Date is outside allowed business range (01/01/2025 - 31/12/2025)");
+        // Present this validation through the verified PawaUtils.Dialogs API.
         return;
     }
     

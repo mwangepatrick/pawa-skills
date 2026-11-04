@@ -1,36 +1,9 @@
----
-name: pawadesigner-sfbutton
-description: SfButton usage patterns for the Syncfusion-pilot form pattern in PawaPos
-metadata:
-  type: reference
----
-
 # SfButton
 
-**Status: not just a pilot** — `Syncfusion.WinForms.Controls.SfButton` was already in real use before the `DepartmentalStockSales` pilot, in `DiaPackingMaster.Designer.cs` and `CustomerPerfomance.Designer.cs`. The default PawaPos button is still a plain `Button` styled via `ThemeManager.StylePrimaryButton`/`StyleSecondaryButton` — see main SKILL.md.
+`Syncfusion.WinForms.Controls.SfButton` is in `Syncfusion.Core.WinForms` and derives from WinForms Button. Audit actual dependencies before replacing a command control.
 
-## Official Docs
-https://help.syncfusion.com/windowsforms/button/getting-started
+Use the verified `PawaControls.ThemeManager.StylePrimaryButton`, `StyleSecondaryButton`, `StyleCloseButton`, `StyleAccentButton` or `StyleDestructiveButton` for the action's role. The audited `ThemeManager.Syncfusion.cs` applies SfButton's Style palette through `StyleSyncfusionCommand`, including hover, pressed, focused and disabled states.
 
-## Namespace / Assembly
-- Namespace: `Syncfusion.WinForms.Controls`
-- Assembly: `Syncfusion.Core.WinForms` (already referenced in `pos.csproj`)
+SfButton paints from its Style object. A helper setting only inherited BackColor/ForeColor is insufficient. Check the target source and deployed DLL; if the Syncfusion branch is absent, extend the owning shared helper within scope and verify existing callers. Avoid local palettes and guessed APIs. A compatible standard Button is a documented fallback only when the available contract cannot preserve behavior.
 
-## It IS a Button, but rendering needs `.Style` too
-
-`SfButton : System.Windows.Forms.Button` — so `ThemeManager.StylePrimaryButton(SfButton)`/`StyleSecondaryButton(SfButton)` compile and run fine (they take a `Button` parameter), setting the base `BackColor`/`ForeColor`/`Font`/`FlatStyle`/`Height`. **But** `SfButton` paints itself from its own `Style` sub-object (`Style.BackColor`, `Style.ForeColor`, ...), not directly from the base `Button.BackColor` — every existing local usage (`DiaPackingMaster.Designer.cs`) sets both together. Skipping `.Style.*` risks the button rendering with default/unstyled colors even after `ThemeManager.StylePrimaryButton()` runs.
-
-`ThemeManager.cs` (in `pawapos-shared`) has no `SfButton`-aware branch today (adding one requires a `Syncfusion.Core.WinForms` reference in `PawaShared.csproj`, which it doesn't have) — until/unless that's added, set `.Style.BackColor`/`.Style.ForeColor` manually in the form, reusing `ThemeManager.BrandColors.*`/`UIColors.*` tokens rather than inventing new color literals:
-
-```csharp
-ThemeManager.StylePrimaryButton(btnRefresh);  // base Button styling — Font, Height, FlatStyle, etc.
-btnRefresh.Style.BackColor = ThemeManager.BrandColors.Orange;
-btnRefresh.Style.ForeColor = System.Drawing.Color.White;
-```
-
-## Common Mistakes
-
-**❌ Calling only `ThemeManager.StylePrimaryButton(sfButton)` and expecting the orange fill to show**
-→ May render unstyled — `SfButton`'s custom paint logic reads `.Style.BackColor`, not the base `Button.BackColor`, in at least some render states.
-
-**✅ Always pair `ThemeManager.StylePrimaryButton()`/`StyleSecondaryButton()` with an explicit `.Style.BackColor`/`.Style.ForeColor` set, reusing `ThemeManager` color tokens.**
+Keep captions, mnemonics, semantics, 36px command height, widths and spacing in Designer. Apply the role after broad theming so other actions cannot inherit primary states. Verify inherited properties and actual rendering in every state. Full palettes live in [buttons/dropdowns](buttons-dropdowns.md).

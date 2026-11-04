@@ -31,7 +31,7 @@ Ctrls.FillComboBoxSf(cmbCategory, data, "code", "name", showAll: true, defaultNu
 cmbCategory.SelectedIndex = 0;
 
 // Read selected value (mirrors Shared.GetComboXVal for ComboBoxEx):
-var code = cmbCategory.SelectedIndex <= 0 ? null : Ctrls.GetSfComboVal(cmbCategory);
+var code = Ctrls.GetSfComboVal(cmbCategory); // Handle an ALL/empty sentinel only when explicitly added.
 
 // Set selected value programmatically:
 Ctrls.SetSfComboVal(cmbCategory, code);

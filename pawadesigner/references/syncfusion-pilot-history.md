@@ -1,3 +1,5 @@
+> Historical record only. Current skill rules and verified target APIs supersede helper/toolkit claims below. Read only for historical context.
+
 # Syncfusion Full-Stack Pilot (history)
 
 Preserved verbatim from the Claude-side copy of this skill (2026-08-11). It describes the original

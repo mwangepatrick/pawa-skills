@@ -1,5 +1,7 @@
 # Form Layout Fit and Reachable Commands
 
+Preserve existing field order, grouping and arrangement unless the user requests layout changes. Styling/control fixes do not authorize reflow. Apply the scale below to new or approved layout work. Identify unavoidable clipping/fit conflicts and propose the smallest adjustment before moving fields. Explicit user layout instructions take precedence.
+
 Mandatory for every new or modified form, listing, report and dialog. It exists
 because fixed-size forms were authored taller than small screens, so the command
 buttons (positioned absolutely below the fields) ended up off-screen and could

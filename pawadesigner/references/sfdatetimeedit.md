@@ -7,7 +7,7 @@ metadata:
 
 # SfDateTimeEdit
 
-**Status: pilot only.** The default PawaPos date input is still the standard .NET `DateTimePicker` — see `[[pawadesigner-datetimepicker]]` (references/sfdatetimepicker.md) for that convention, which still applies everywhere except the pilot form. `SfDateTimeEdit` was adopted for one form — `DepartmentalStockSales.cs`.
+Use the exact Syncfusion type supported by the target project. The examples below describe APIs; the current entrypoint and Designer workflow determine migration scope and shared styling.
 
 There is no Syncfusion WinForms control literally named "SfDateTimePicker" — the real control class is `SfDateTimeEdit`. If you see `SfDateTimePicker` referenced anywhere (including older text in this skill's main SKILL.md "Never use" list), read it as `SfDateTimeEdit`.
 

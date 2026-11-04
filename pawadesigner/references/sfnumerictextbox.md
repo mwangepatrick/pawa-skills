@@ -7,7 +7,7 @@ metadata:
 
 # SfNumericTextBox
 
-**Status: pilot only**, used for the disabled numeric summary fields on `DepartmentalStockSales.cs`. The default PawaPos numeric field is still a plain `TextBox` with `TextAlign = Right` — see main SKILL.md's numeric-field hard rule.
+Use the exact Syncfusion type supported by the target project. The examples below describe APIs; the current entrypoint and Designer workflow determine migration scope and shared styling.
 
 ## Official Docs
 https://help.syncfusion.com/windowsforms/numeric-textbox/gettingstarted
