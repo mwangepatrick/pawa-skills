@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pawalogic"
+  short_description: "Find Pawa code owners and place new logic"
+  default_prompt: "Use $pawalogic to find the owning Pawa project and recommend where this logic belongs, citing current source."

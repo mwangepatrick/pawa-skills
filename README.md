@@ -4,6 +4,16 @@ A collection of reusable Claude Code skills for PawaPos and related projects. Bu
 
 ## Skills in This Collection
 
+### [pawalogic](./pawalogic/)
+Find Pawa classes and code owners, understand cross-repository project relationships,
+and place new logic using current architecture and source evidence. Includes a local,
+bounded lookup utility for both `D:\cp\pp` and `D:\cp\wpf`.
+
+**Use when:** Finding business logic, disambiguating projects, locating authoritative
+implementations, or choosing an existing project and namespace for new code.
+
+**Validation:** [Coverage, checks and known gaps](./pawalogic/references/validation.md).
+
 ### [pawapos-debugging](./pawapos-debugging/)
 Investigate PawaPos failures using project log memory, local Windows evidence,
 build provenance and the `diagnosing-bugs` workflow. Consults
