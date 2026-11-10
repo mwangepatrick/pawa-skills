@@ -8,6 +8,7 @@ Reviewed 2026-11-08. These are evidence-based starting points, not blanket owner
 | BO-local pure calculation | `pawapos-bo/classes/ProductTransactions/ProductUnitCalculator.cs` as an example | Actual consumers; keep input/output calculation independent of form and DB state |
 | Existing shared business objects | `pawapos-shared/PawaShared.csproj`; example `CustomerDeposit.cs` | Business owner and consumers; sharing is justified by real reuse, not a generic name |
 | PostgreSQL mechanics | `pawapos-db/PawaDb.csproj`; `Db.cs`, `Db.TransactionScope.cs` | Existing CRUD/transaction interfaces; business decisions stay with their owner |
+| Local queue tasks (LiteDB `queue_process`) | `pawapos-fo/LiteEngine/commons/QueueDb.cs` for persistence; `pawapos-queue/PawaQueue/QueueProcessor.cs` for polling/dispatch; handlers in `TaskTypes/` | Task state changes (status, `StartTime`, retry) belong in `QueueDb`; processing policy (network, retry, logging) in `QueueProcessor`. See [queue-flow](queue-flow.md) |
 | SQLite queues/cache/events | `pawa-lite/PawaLiteEngine`, its README | README leaves PostgreSQL and freshness decisions with application data services; distinguish legacy FO LiteEngine |
 | Password authentication | `pawapos-auth/Authenticator.cs` | Existing authentication entry points, security/permission invariants; user administration also spans `pawapos-user` |
 | Shared updater behavior | `pawa-updates` README and Core/Support/Windows/Updater projects | App-specific adapters versus shared behavior; README identifies excluded historical FO copies |

@@ -27,3 +27,7 @@ That evaluation exposed false `record in` type matches and filename-driven symbo
 The selective map leaves several cloud/legacy/tax ownership questions unresolved and labels them accordingly. The snapshot is not a compiler, call graph or runtime inventory. Refresh explicitly after relevant source/branch changes; verify current declarations, compile inclusion and callers before edits. Non-C# symbols, generated designer types, MSBuild condition evaluation, HTTP/database/queue relationships and reflection require targeted source inspection.
 
 Skill installation copies are separate from canonical source. After editing `D:/cp/pp/pawa-skills/pawalogic`, update the intended agent installation as well. Do not run the collection's bulk installer solely to update this skill: existing install destinations differ among tools.
+
+## 2026-11-11 refresh
+
+After the `pawapos-queue` network-reschedule fix (`pawapos-bo#10`): added [queue-flow](queue-flow.md); corrected the legacy local-storage row (`pawapos-fo/LiteEngine` is LiteDB, now the standalone repo `cosmopawa/pawapos-liteengine`; consumers taken from `lookup.py deps --incoming`: BO, Shared, Queue, TestCenter). Gap found: a repo-boundary mistake (assuming `pawapos-fo/LiteEngine` lived in the nearby `pawapos-fo/PawaPosFo` repo) came from path proximity, so SKILL.md step 3 now requires a `git rev-parse` check. Still open: whether `Pos Cash.csproj` and `PawaCloud` reach LiteEngine by compile-include rather than ProjectReference (the index shows no ProjectReference edge).

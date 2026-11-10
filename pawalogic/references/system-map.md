@@ -12,11 +12,11 @@ Paths in the table are relative to `D:/cp/pp` unless marked WPF. **Source** mean
 | Shared business logic | `pawapos-shared/PawaShared.csproj` | Source folders/types cover sales, inventory, purchases, GL, cashbook and payments; overlapping ownership with specialized libs needs caller inspection |
 | Finance/loyalty | `pawapos-fin/PawaPosFin.csproj`, `pawapos-loy/Loyalty.csproj` | Source: GL and loyalty types with separate DB initialization; complete boundaries partial |
 | PostgreSQL and migration queue | `pawapos-db/PawaDb.csproj`, `pawapos-dblog` | Source: query/CRUD/transaction wrapper; versioned migration policy comes from affected repo/task instructions |
-| Local SQLite | `pawa-lite/PawaLiteEngine`; legacy `pawapos-fo/LiteEngine` | Read `pawa-lite/README.md` for ownership. BO references both; names are not interchangeable |
+| Local storage | `pawa-lite/PawaLiteEngine` (SQLite); legacy `pawapos-fo/LiteEngine` (LiteDB: `Db`, `QueueDb`, schema/definitions) | Read `pawa-lite/README.md` for ownership. Names are not interchangeable. LiteEngine is its own repo, `cosmopawa/pawapos-liteengine`, nested at `pawapos-fo/LiteEngine` and outside the `pawapos-fo/PawaPosFo` repo (which tracks only an empty `Init.cs` stub). Direct project consumers (index, 2026-11-11): BO `pos.csproj`, `PawaShared`, `PawaQueue`, FO `TestCenter` |
 | Identity/users | `pawapos-auth`, `pawapos-user/PawaUser.csproj`, `PawaSign` | Source: authentication/crypto, user/branch/biometric types; complete signing scope partial |
 | UI/startup/helpers | `pawa-controls/PawaControls`, `PawaStart`, `PawaUtils` | Source and BO references: shared controls, startup/company/connection health, dialogs/crypto/data helpers |
 | Logging/mail/print | `pawapos-logger`, `pawapos-mail/PawaMail`, `pawapos-pdf/pdf` | Source/README: logging sinks, Mailgun, ESC/POS-to-PDF |
-| Messages/jobs/API | `pawapos-com/SmartComServer`, `pawapos-queue/PawaQueue`, `pawapos-api/PawaApi` | Com AGENTS/source: modem/SMS/mobile-message parsing; job/API boundaries partial |
+| Messages/jobs/API | `pawapos-com/SmartComServer`, `pawapos-queue/PawaQueue`, `pawapos-api/PawaApi` | Com AGENTS/source: modem/SMS/mobile-message parsing; queue flow traced in [queue-flow](queue-flow.md); job/API boundaries otherwise partial |
 | Sync | `pawacloud-sync`, `pawapos-sync/PawaSync/PSync.csproj` | Read their READMEs: PostgreSQL outbox to cloud REST; Windows sync/backup/update service respectively |
 | Other cloud helpers | `PawaSupa`, `PawaCloud`, `PawaPosX` | Project/source identity only; product authority and complete responsibilities unresolved |
 | Shared updater | `pawa-updates` | Read README first: Core/Support/Windows/Updater; app-specific BO/FO adapters; old excluded FO copies are historical |
